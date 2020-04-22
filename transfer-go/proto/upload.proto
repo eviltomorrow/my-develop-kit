@@ -1,0 +1,50 @@
+syntax = "proto3";
+package pb;
+import "google/protobuf/wrappers.proto";
+
+service UploadFile {
+    rpc getFileInfo(google.protobuf.StringValue) returns (FileInfo){
+        
+    }
+    // 获取检查记录文件
+    rpc setCheckPoint(CheckPoint) returns (stream FilePart){
+
+    }
+    // 上传文件分片
+    rpc uploadFile(stream FileChannel) returns (google.protobuf.BoolValue){
+
+    }
+} 
+
+message FileInfo {
+    string path = 1; 
+    int64 size = 2;
+    bool isDir = 3;
+    string md5 = 4;
+    int64 lastMod = 5;
+}
+
+message CheckPoint {
+    string path = 1;
+    FileInfo fileInfo = 2;
+}
+
+message FilePart {
+    int64 num = 1;
+    int64 offset = 2;
+    bytes data = 3;
+    int64 size = 4;
+    bool isCompleted = 5;
+}
+
+message FileChannel {
+    string checkpoint = 1;
+    FilePart filePart = 2;
+    FileInfo fileInfo = 3;
+    enum UploadStrategy {
+        EXIST_FAILURE = 0; // 存在失败
+        EXIST_COVER = 1;   // 存在覆盖
+    }
+    UploadStrategy strategy = 4;
+
+}

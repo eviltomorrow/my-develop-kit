@@ -2,3 +2,8 @@ rsa-java/target
 rsa-java/.classpath
 rsa-java/.project
 rsa-java/.settings
+
+transfer-java/target
+transfer-java/.classpath
+transfer-java/.project
+transfer-java/.settings

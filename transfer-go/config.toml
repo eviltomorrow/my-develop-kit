@@ -1,0 +1,11 @@
+[server]
+port = 8080
+
+[system]
+log-file-dir = "/tmp/log/transfer"
+# 日志级别
+log-level = "debug"
+# 日志格式 
+log-format = "text"
+# pprof 监听端口
+pprof-listen-port = 7080
