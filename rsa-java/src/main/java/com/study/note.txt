@@ -1,0 +1,9 @@
+手动生成公钥私钥：
+
+openssl genrsa -out id_rsa_private.key 1024
+
+openssl rsa -in id_rsa_private.key -out id_rsa_public.key -pubout
+
+(必须做)PKCS#8编码：指明输入私钥文件为rsa_private_key.pem，输出私钥文件为pkcs8_rsa_private_key.pem，不采用任何二次加密（-nocrypt）
+
+openssl pkcs8 -topk8 -in id_rsa_private.key -out pkcs8_id_rsa_private.key -nocrypt
