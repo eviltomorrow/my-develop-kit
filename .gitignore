@@ -7,3 +7,8 @@ transfer-java/target
 transfer-java/.classpath
 transfer-java/.project
 transfer-java/.settings
+
+grpc-java-tls/target
+grpc-java-tls/.classpath
+grpc-java-tls/.project
+grpc-java-tls/.settings
