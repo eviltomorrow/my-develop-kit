@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/BurntSushi/toml"
-	"github.com/eviltomorrow/tools/plog"
+	"github.com/eviltomorrow/my-develop-kit/plog"
 )
 
 // Config config

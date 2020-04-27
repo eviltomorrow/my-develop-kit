@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/eviltomorrow/transfer-go/pb"
+	"github.com/eviltomorrow/my-develop-kit/transfer-go/pb"
 	"github.com/golang/protobuf/ptypes/wrappers"
 )
 

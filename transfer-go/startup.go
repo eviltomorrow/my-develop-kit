@@ -14,10 +14,10 @@ import (
 	//
 	_ "net/http/pprof"
 
-	"github.com/eviltomorrow/tools/plog"
-	"github.com/eviltomorrow/transfer-go/config"
-	"github.com/eviltomorrow/transfer-go/pb"
-	"github.com/eviltomorrow/transfer-go/service"
+	"github.com/eviltomorrow/my-develop-kit/plog"
+	"github.com/eviltomorrow/my-develop-kit/transfer-go/config"
+	"github.com/eviltomorrow/my-develop-kit/transfer-go/pb"
+	"github.com/eviltomorrow/my-develop-kit/transfer-go/service"
 
 	"google.golang.org/grpc"
 )

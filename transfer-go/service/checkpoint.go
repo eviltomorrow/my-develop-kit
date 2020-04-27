@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/eviltomorrow/transfer-go/pb"
+	"github.com/eviltomorrow/my-develop-kit/transfer-go/pb"
 )
 
 const (
