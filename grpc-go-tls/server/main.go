@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/eviltomorrow/grpc-go-tls/pb"
+	"github.com/eviltomorrow/my-develop-kit/grpc-go-tls/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/testdata"
@@ -28,8 +28,8 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var certFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/grpc-go-tls/certs/server.crt"
-	var keyFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/grpc-go-tls/certs/server.pem"
+	var certFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.crt"
+	var keyFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.pem"
 	// Create tls based credential.
 	creds, err := credentials.NewServerTLSFromFile(testdata.Path(certFile), testdata.Path(keyFile))
 	if err != nil {

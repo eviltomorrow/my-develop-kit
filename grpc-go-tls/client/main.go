@@ -2,22 +2,23 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"time"
 
-	"github.com/eviltomorrow/grpc-go-tls/pb"
+	"github.com/eviltomorrow/my-develop-kit/grpc-go-tls/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/testdata"
 )
 
 func main() {
 
-	
-	var caCertFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/grpc-go-tls/certs/ca.crt"
-	var clientCertFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/grpc-go-tls/certs/client.crt"
-	var clientCertKey = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/grpc-go-tls/certs/client.pem"
+	var caCertFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.crt"
+	var clientCertFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/client.crt"
+	var clientCertKey = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/client.pem"
 	var serverName = "localhost"
 
 	// Load the certificates from disk
