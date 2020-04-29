@@ -64,7 +64,7 @@ public class HelloWorldClientTls {
 
 		String path = HelloWorldClientTls.class.getResource("/").toString();
 		path = path.replace("file:", "");
-
+		path = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/";
 		String host = "localhost";
 		int port = 8080;
 		String caCertFile = path + "certs/ca.crt";
