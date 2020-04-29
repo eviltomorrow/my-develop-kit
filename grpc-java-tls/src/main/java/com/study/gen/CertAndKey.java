@@ -1,8 +1,10 @@
 package com.study.gen;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.security.KeyFactory;
@@ -15,8 +17,10 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.Signature;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Date;
 import java.util.Locale;
@@ -33,6 +37,19 @@ import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Certificate;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.TBSCertificate;
+import org.bouncycastle.asn1.x509.Time;
+import org.bouncycastle.asn1.x509.V3TBSCertificateGenerator;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -41,28 +58,84 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
 
-import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-
-public class GenCertAndKey {
+public class CertAndKey {
 	public static final String BC = BouncyCastleProvider.PROVIDER_NAME;
 	public static int BITS = 2048;
 	static {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
-	public static void createCARootCert(X500Name subject, String certFilePath, String keyFilePath, int expirationDay)
-			throws Exception {
-		// 生成私钥
+	public static KeyPair generateKey() throws NoSuchAlgorithmException, NoSuchProviderException {
 		SecureRandom random = new SecureRandom();
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", BC);
 		keyPairGenerator.initialize(BITS, random);
 		KeyPair key = keyPairGenerator.generateKeyPair();
+		return key;
+	}
 
-		SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(key.getPublic().getEncoded());
+	public static PrivateKey readPirvateKey(String keyPath) throws Exception {
+		Reader reader = null;
+		PemReader pemReader = null;
+		try {
+			reader = new FileReader(keyPath);
+			pemReader = new PemReader(reader);
+			PemObject pemObject = pemReader.readPemObject();
+			byte[] data = pemObject.getContent();
+			KeyFactory kf = KeyFactory.getInstance("RSA");
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(data);
+			PrivateKey keyPair = kf.generatePrivate(keySpec);
+			return keyPair;
+		} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+			throw e;
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (pemReader != null) {
+				pemReader.close();
+			}
+		}
+
+	}
+
+	public static void writePrivateKey(String path, KeyPair key) {
+		Writer writer = null;
+		PemWriter pemWriterKey = null;
+		try {
+			writer = new FileWriter(path);
+			pemWriterKey = new PemWriter(writer);
+			pemWriterKey.writeObject(new PemObject("RSA PRIVATE KEY", key.getPrivate().getEncoded()));
+			pemWriterKey.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				pemWriterKey.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	public static Certificate generateCARootCertificate(X500Name name, int expirationDay, KeyPair selfKeyPair)
+			throws Exception {
+		SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo
+				.getInstance(selfKeyPair.getPublic().getEncoded());
 		BcX509ExtensionUtils extUtils = new BcX509ExtensionUtils();
 		ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
-		extensionsGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(true)); // ca cert
+		extensionsGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
 		extensionsGenerator.addExtension(Extension.keyUsage, true,
 				new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
 		extensionsGenerator.addExtension(Extension.subjectKeyIdentifier, false,
@@ -71,81 +144,67 @@ public class GenCertAndKey {
 				extUtils.createAuthorityKeyIdentifier(subjectPublicKeyInfo));
 		V3TBSCertificateGenerator tbsGen = new V3TBSCertificateGenerator();
 		tbsGen.setSerialNumber(new ASN1Integer(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE));
-		tbsGen.setIssuer(subject);
+		tbsGen.setIssuer(name);
 
 		Date notBefore = new Date();
 		Date notAfter = new Date(System.currentTimeMillis() + 1000L * 60L * 60L * 24L * expirationDay); // xx 天
 
 		tbsGen.setStartDate(new Time(notBefore, Locale.CHINA));
 		tbsGen.setEndDate(new Time(notAfter, Locale.CHINA));
-		tbsGen.setSubject(subject);
+		tbsGen.setSubject(name);
 		tbsGen.setSubjectPublicKeyInfo(subjectPublicKeyInfo);
 		tbsGen.setExtensions(extensionsGenerator.generate());
 		tbsGen.setSignature(getSignAlgo(subjectPublicKeyInfo.getAlgorithm())); // 签名算法标识等于密钥算法标识
 		TBSCertificate tbs = tbsGen.generateTBSCertificate();
-		Certificate certificate = assembleCert(tbs, subjectPublicKeyInfo, key.getPrivate());
-
-		// 写出证书
-		Writer certWriter = new FileWriter(certFilePath);
-		PemWriter pemWriterCert = new PemWriter(certWriter);
-		pemWriterCert.writeObject(new PemObject("CERTIFICATE", certificate.getEncoded()));
-		pemWriterCert.flush();
-		pemWriterCert.close();
-
-		// 写出私钥
-		Writer w = new FileWriter(keyFilePath);
-		PemWriter pemWriterKey = new PemWriter(w);
-		pemWriterKey.writeObject(new PemObject("RSA PRIVATE KEY", key.getPrivate().getEncoded()));
-		pemWriterKey.flush();
-		pemWriterKey.close();
+		Certificate certificate = assembleCert(tbs, subjectPublicKeyInfo, selfKeyPair.getPrivate());
+		return certificate;
 	}
 
-	public static void createCert(X500Name subject, String certFilePath, String keyFilePath, String targetCert,
-			String targetKey, int expirationDay) throws Exception {
-		// 生成私钥
-		SecureRandom random = new SecureRandom();
-		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", BC);
-		keyPairGenerator.initialize(BITS, random);
-		KeyPair key = keyPairGenerator.generateKeyPair();
-
-		// 加载证书
-		CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		FileInputStream in = new FileInputStream(certFilePath);
-		java.security.cert.Certificate c = cf.generateCertificate(in);
-		
-		X509Certificate x509Cert = (X509Certificate) c;
-
-		Reader reader = new FileReader(keyFilePath);
-		PemReader pemReader = new PemReader(reader);
-		PemObject pemObject = pemReader.readPemObject();
-		byte[] data = pemObject.getContent();
-		KeyFactory kf = KeyFactory.getInstance("RSA");
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(data);
-		PrivateKey issuerPrivateKey = kf.generatePrivate(keySpec);
-		pemReader.close();
-
-		PKCS10CertificationRequest csr = generateCSR(subject, key.getPublic(), key.getPrivate());
+	public static Certificate generateCertificate(X500Name name, int expirationDay, X509Certificate caCertificate,
+			PrivateKey caPrivateKey, KeyPair selfKeyPair, String[] dns, String[] ip) throws Exception {
+		PKCS10CertificationRequest csr = generateCSR(name, selfKeyPair.getPublic(), selfKeyPair.getPrivate());
 		Date notBefore = new Date();
 		Date notAfter = new Date(System.currentTimeMillis() + 1000L * 60L * 60L * 24L * expirationDay); // xx 天
 
-		X509CertificateHolder issuer = new X509CertificateHolder(x509Cert.getEncoded());
+		X509CertificateHolder issuer = new X509CertificateHolder(caCertificate.getEncoded());
 		if (!verifyCSR(csr))
 			throw new IllegalArgumentException("证书请求验证失败");
 
 		BcX509ExtensionUtils extUtils = new BcX509ExtensionUtils();
 		ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
-		extensionsGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(false)); // entity cert
+		extensionsGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 		extensionsGenerator.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature));
 		extensionsGenerator.addExtension(Extension.authorityKeyIdentifier, false,
 				extUtils.createAuthorityKeyIdentifier(issuer)); // 授权密钥标识
 		extensionsGenerator.addExtension(Extension.subjectKeyIdentifier, false,
 				extUtils.createSubjectKeyIdentifier(csr.getSubjectPublicKeyInfo())); // 使用者密钥标识
 
-		GeneralName name1 = new GeneralName(GeneralName.iPAddress, "127.0.0.1");
-		GeneralName name2 = new GeneralName(GeneralName.dNSName, "localhost");
-		GeneralName[] name = { name1, name2 };
-		GeneralNames subjectAltNames = new GeneralNames(name);
-		extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, subjectAltNames);
+		if (ip != null || dns != null) {
+			int ipLength = 0;
+			int dnsLength = 0;
+			if (ip != null) {
+				ipLength = ip.length;
+			}
+			if (dns != null) {
+				dnsLength = dns.length;
+			}
+			GeneralName[] names = new GeneralName[ipLength + dnsLength];
+			int i = 0;
+			for (String val : ip) {
+				GeneralName gn = new GeneralName(GeneralName.iPAddress, val);
+				names[i] = gn;
+				i++;
+			}
+			for (String val : dns) {
+				GeneralName gn = new GeneralName(GeneralName.dNSName, val);
+				names[i] = gn;
+				i++;
+			}
+
+			GeneralNames subjectAltNames = new GeneralNames(names);
+			extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, subjectAltNames);
+		}
+
 		V3TBSCertificateGenerator tbsGen = new V3TBSCertificateGenerator();
 		tbsGen.setSerialNumber(new ASN1Integer(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE));
 		tbsGen.setIssuer(issuer.getSubject());
@@ -154,27 +213,54 @@ public class GenCertAndKey {
 		tbsGen.setSubject(csr.getSubject());
 		tbsGen.setSubjectPublicKeyInfo(csr.getSubjectPublicKeyInfo());
 		tbsGen.setExtensions(extensionsGenerator.generate());
-		System.out.println(issuer.getSubjectPublicKeyInfo().getAlgorithm());
 
-//		tbsGen.setSignature(new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption, DERNull.INSTANCE)); // 签名算法标识等于颁发者证书的密钥算法标识\
 		tbsGen.setSignature(getSignAlgo(issuer.getSubjectPublicKeyInfo().getAlgorithm()));
 		TBSCertificate tbs = tbsGen.generateTBSCertificate();
-		Certificate certificate = assembleCert(tbs, issuer.getSubjectPublicKeyInfo(), issuerPrivateKey);
+		Certificate certificate = assembleCert(tbs, issuer.getSubjectPublicKeyInfo(), caPrivateKey);
+		return certificate;
+	}
 
-		// 写出证书
-		Writer certWriter = new FileWriter(targetCert);
-		PemWriter pemWriterCert = new PemWriter(certWriter);
-		pemWriterCert.writeObject(new PemObject("CERTIFICATE", certificate.getEncoded()));
-		pemWriterCert.flush();
-		pemWriterCert.close();
+	public static X509Certificate readCertificate(String path) throws Exception {
+		CertificateFactory cf;
+		FileInputStream in = null;
+		try {
+			cf = CertificateFactory.getInstance("X.509");
+			in = new FileInputStream(path);
+			return (X509Certificate) cf.generateCertificate(in);
+		} catch (CertificateException | FileNotFoundException e) {
+			throw e;
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
 
-		// 写出私钥
-		Writer w = new FileWriter(targetKey);
-		PemWriter pemWriterKey = new PemWriter(w);
-		pemWriterKey.writeObject(new PemObject("RSA PRIVATE KEY", key.getPrivate().getEncoded()));
-		pemWriterKey.flush();
-		pemWriterKey.close();
-
+	public static void writeCertificate(String path, Certificate certificate) {
+		Writer writer = null;
+		PemWriter pemWriterCert = null;
+		try {
+			writer = new FileWriter(path);
+			pemWriterCert = new PemWriter(writer);
+			pemWriterCert.writeObject(new PemObject("CERTIFICATE", certificate.getEncoded()));
+			pemWriterCert.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				pemWriterCert.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private static PKCS10CertificationRequest generateCSR(X500Name subject, PublicKey publicKey,
@@ -204,7 +290,7 @@ public class GenCertAndKey {
 			throw new IllegalArgumentException("密钥算法不支持");
 	}
 
-	public static Certificate assembleCert(TBSCertificate tbsCertificate,
+	private static Certificate assembleCert(TBSCertificate tbsCertificate,
 			SubjectPublicKeyInfo issuerSubjectPublicKeyInfo, PrivateKey issuerPrivateKey) throws Exception {
 		byte[] signature = null;
 		if (issuerPrivateKey.getAlgorithm().equalsIgnoreCase("RSA")) {
@@ -254,18 +340,35 @@ public class GenCertAndKey {
 	}
 
 	public static void main(String[] args) throws Exception {
-		try {
-			String caCert = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.crt";
-			String caKey = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.key";
-			String subject = "C = CN, ST = BeiJing, L = BeiJing, O = Apple Inc, OU = Dev, CN = localhost";
-			createCARootCert(new X500Name(subject), caCert, caKey, 365);
+		String subject = "C = CN, ST = BeiJing, L = BeiJing, O = Apple Inc, OU = Dev, CN = localhost";
+		String caKeyPath = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.key";
+		String caCertPath = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.crt";
+		KeyPair caKeyPair = generateKey();
+		writePrivateKey(caKeyPath, caKeyPair);
 
-			String serverCert = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.crt";
-			String serverPem = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.pem";
-			createCert(new X500Name(subject), caCert, caKey, serverCert, serverPem, 365);
-		} catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Certificate certificate = generateCARootCertificate(new X500Name(subject), 365, caKeyPair);
+		writeCertificate(caCertPath, certificate);
+
+		String serverKeyPath = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.pem";
+		String serverCertPath = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.crt";
+		KeyPair serverKeyPair = generateKey();
+		writePrivateKey(serverKeyPath, serverKeyPair);
+
+		X509Certificate caCert = readCertificate(caCertPath);
+		String[] dns = { "localhost" };
+		String[] ip = { "127.0.0.1" };
+		certificate = generateCertificate(new X500Name(subject), 365, caCert, caKeyPair.getPrivate(), serverKeyPair,
+				dns, ip);
+		writeCertificate(serverCertPath, certificate);
+
+		String clientKeyPath = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/client.pem";
+		String clientCertPath = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/client.crt";
+		KeyPair clientKeyPair = generateKey();
+		writePrivateKey(clientKeyPath, clientKeyPair);
+
+		caCert = readCertificate(caCertPath);
+		certificate = generateCertificate(new X500Name(subject), 365, caCert, caKeyPair.getPrivate(), clientKeyPair,
+				null, null);
+		writeCertificate(clientCertPath, certificate);
 	}
 }
