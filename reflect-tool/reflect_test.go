@@ -12,8 +12,8 @@ func TestFindObejctByTag(t *testing.T) {
 		},
 	}
 
-	rt, rv, err := FindObjectByTag([]string{"name"}, &p)
+	rt, rv, err := FindObjectByTag([]string{"asset", "stocks"}, &p)
 	t.Logf("error: %v", err)
 	t.Logf("rt: %v", rt)
-	t.Logf("rv: %v", rv)
+	t.Logf("rv: %v, Canset: %v", rv, rv.CanSet())
 }
