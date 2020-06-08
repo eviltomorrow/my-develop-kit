@@ -35,9 +35,9 @@ func find(tag []string, pt reflect.Type, pv reflect.Value) (rt reflect.Type, rv 
 			var field = elem.Field(i)
 			if tag[0] == field.Tag.Get("json") {
 				if len(tag) == 1 {
-					return field.Type, pv.Field(i), nil
+					return field.Type, pv.Elem().Field(i), nil
 				}
-				return find(tag[1:], pv.Type(), pv.Field(i))
+				return find(tag[1:], pv.Type(), pv.Elem().Field(i))
 			}
 		}
 		return rt, rv, fmt.Errorf("Not found specified object with tag[%v]", tag[0])
