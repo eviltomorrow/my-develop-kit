@@ -4,10 +4,11 @@ import "encoding/json"
 
 // Person p
 type Person struct {
-	Name      string   `json:"name"`
-	Age       int      `json:"age"`
-	Asset     Asset    `json:"asset"`
-	ChildName []string `json:"child"`
+	Name      string         `json:"name"`
+	Age       int            `json:"age"`
+	Asset     Asset          `json:"asset"`
+	ChildName []string       `json:"child"`
+	Sports    map[string]int `json:"sports"`
 }
 
 // Asset a
