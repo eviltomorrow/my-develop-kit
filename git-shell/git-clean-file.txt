@@ -1,0 +1,14 @@
+1、
+    $ git filter-branch --tag-name-filter cat --index-filter 'git rm -r --cached --ignore-unmatch FILENAME ' --prune-empty -f -- --all
+    将FILENAME替换为文件名，多个以空格分隔， 可以用*匹配目录。
+    执行完成后，归档历史已经清理完成，但还有一些垃圾文件，用下面的命令清理.
+
+2、
+    $ rm -rf .git/refs/original/
+    $ git reflog expire --expire=now --all
+    $ git gc --prune=now
+    $ git gc --aggressive --prune=now
+    ok,到此，大功告成，du -sh . 可以看到成果。
+
+3、
+    $ git push origin --force --all
