@@ -236,58 +236,58 @@ func WritePKCS8PrivateKey(path string, privKey []byte) error {
 }
 
 func main() {
-	var baseDir = "/home/shepard/workspace-agent/project-go/src/agent/configs/certs"
-	// // 生成 根 证书和密钥
-	// caPrivBytes, caCertBytes, err := GenerateCertificate(nil, nil, 2048, &ApplicationInformation{
-	// 	CertificateConfig: &CertificateConfig{
-	// 		IsCA:           true,
-	// 		ExpirationTime: 24 * time.Hour * 365 * 3,
-	// 	},
-	// 	CommonName:           "ultrapower.com.cn",
-	// 	CountryName:          "CN",
-	// 	ProvinceName:         "BeiJing",
-	// 	LocalityName:         "BeiJing",
-	// 	OrganizationName:     "Ultrapower Inc",
-	// 	OrganizationUnitName: "OneAgent",
-	// })
-	// if err != nil {
-	// 	log.Fatalf("GenerateCertificate failure, nest error: %v", err)
-	// }
-	// WritePKCS1PrivateKey(filepath.Join(baseDir, "ca.key"), caPrivBytes)
-	// WriteCertificate(filepath.Join(baseDir, "ca.crt"), caCertBytes)
-
-	// // 生成 Server 证书
-	// caKey, err := x509.ParsePKCS1PrivateKey(caPrivBytes)
-	// if err != nil {
-	// 	log.Fatalf("ParsePKCS1PrivateKey CA key failure, nest error: %v", err)
-	// }
-	// caCert, err := x509.ParseCertificate(caCertBytes)
-	// if err != nil {
-	// 	log.Fatalf("ParseCertificate CA cert failure, nest error: %v", err)
-	// }
+	var baseDir = "/home/shepard/workspace/space-go/project/src/agent/internal/collect/plugins/http/example-server/certs"
+	// 生成 根 证书和密钥
+	caPrivBytes, caCertBytes, err := GenerateCertificate(nil, nil, 2048, &ApplicationInformation{
+		CertificateConfig: &CertificateConfig{
+			IsCA:           true,
+			ExpirationTime: 24 * time.Hour * 365 * 3,
+		},
+		CommonName:           "www.eviltomorrow.com",
+		CountryName:          "CN",
+		ProvinceName:         "BeiJing",
+		LocalityName:         "BeiJing",
+		OrganizationName:     "Eviltomorrow Inc",
+		OrganizationUnitName: "Development",
+	})
+	if err != nil {
+		log.Fatalf("GenerateCertificate failure, nest error: %v", err)
+	}
+	WritePKCS1PrivateKey(filepath.Join(baseDir, "ca.key"), caPrivBytes)
+	WriteCertificate(filepath.Join(baseDir, "ca.crt"), caCertBytes)
 
 	// 生成 Server 证书
-	caKey, err := ReadPKCS8PrivateKey(filepath.Join(baseDir, "ca.key"))
+	caKey, err := x509.ParsePKCS1PrivateKey(caPrivBytes)
 	if err != nil {
-		log.Fatalf("ReadPKCS1PrivateKey CA key failure, nest error: %v", err)
+		log.Fatalf("ParsePKCS1PrivateKey CA key failure, nest error: %v", err)
 	}
-
-	caCert, err := ReadCertificate(filepath.Join(baseDir, "ca.crt"))
+	caCert, err := x509.ParseCertificate(caCertBytes)
 	if err != nil {
 		log.Fatalf("ParseCertificate CA cert failure, nest error: %v", err)
 	}
 
+	// // 生成 Server 证书
+	// caKey, err := ReadPKCS8PrivateKey(filepath.Join(baseDir, "ca.key"))
+	// if err != nil {
+	// 	log.Fatalf("ReadPKCS1PrivateKey CA key failure, nest error: %v", err)
+	// }
+
+	// caCert, err := ReadCertificate(filepath.Join(baseDir, "ca.crt"))
+	// if err != nil {
+	// 	log.Fatalf("ParseCertificate CA cert failure, nest error: %v", err)
+	// }
+
 	serverPrivBytes, serverCertBytes, err := GenerateCertificate(caKey, caCert, 2048, &ApplicationInformation{
 		CertificateConfig: &CertificateConfig{
-			IP:             []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("192.168.172.102")},
+			IP:             []net.IP{net.ParseIP("127.0.0.1")},
 			ExpirationTime: 24 * time.Hour * 365,
 		},
 		CommonName:           "localhost",
 		CountryName:          "CN",
 		ProvinceName:         "BeiJing",
 		LocalityName:         "BeiJing",
-		OrganizationName:     "Apple Inc",
-		OrganizationUnitName: "Dev",
+		OrganizationName:     "Eviltomorrow Inc",
+		OrganizationUnitName: "Development",
 	})
 	if err != nil {
 		log.Fatalf("GenerateCertificate CA cert failure, nest error: %v", err)
