@@ -26,7 +26,8 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
+	grpc.EnableTracing = true
+	s := grpc.NewServer(grpc.NumStreamWorkers(3))
 	pb.RegisterGreeterServer(s, &HelloService{})
 
 	log.Println("Server start")

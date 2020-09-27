@@ -34,10 +34,12 @@ func (u User) DoAnything(count int, thing string) {
 func main() {
 	var num float32 = 1.23
 	log.Printf("type: %v\r\n", reflect.TypeOf(num))
-	log.Printf("value: %v\r\n", reflect.ValueOf(num))
 
+	log.Printf("value: %v\r\n", reflect.ValueOf(num))
+	log.Printf("kind: %v\r\n", reflect.ValueOf(num).Kind())
 	log.Printf("type: %v\r\n", reflect.TypeOf(&num))
 	log.Printf("value: %v\r\n", reflect.ValueOf(&num))
+	log.Printf("kind: %v\r\n", reflect.ValueOf(&num).Kind())
 	log.Printf("%v\r\n", reflect.ValueOf(&num).Interface().(*float32))
 	log.Printf("%v\r\n", reflect.ValueOf(num).Interface().(float32))
 
@@ -52,15 +54,16 @@ func main() {
 			Artical: 100,
 		},
 	}
+	log.Printf("type elem: %v\r\n", reflect.TypeOf(&user).Elem())
 	var userType = reflect.TypeOf(user)
 	log.Printf("user type: %v\r\n", userType.Name())
 	var userValue = reflect.ValueOf(user)
 	log.Printf("user value: %v\r\n", userValue)
-
+	log.Printf("user value1: %v\r\n", reflect.ValueOf(&user))
 	for i := 0; i < userType.NumField(); i++ {
 		var field = userType.Field(i)
 		var value = userValue.Field(i).Interface()
-		log.Printf("num field: %s: %v = %v, kind: %v\r\n", field.Name, field.Type, value, reflect.TypeOf(value).Kind())
+		log.Printf("num field: %s: %v = %v, type: %v, kind: %v\r\n", field.Name, field.Type, value, reflect.TypeOf(value), reflect.TypeOf(value).Kind())
 
 	}
 
