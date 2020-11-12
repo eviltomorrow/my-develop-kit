@@ -1,0 +1,52 @@
+{
+    "code": "0",
+    "msg": "success",
+    "totalCount": 2,
+    "instanceList": [
+      {
+        "parent": {
+          "name": "father",
+          "age": 10,
+          "child": [
+            {
+              "sport": "running"
+            },
+            {
+              "sport": "jumping"
+            }
+          ]
+        },
+        "desc": "HTTP Plugin Test Server.",
+        "os": "CentOS 7.2 x64",
+        "arch": "x64",
+        "cpu": 4,
+        "memory": 17179869184,
+        "ip": "192.168.11.157",
+        "disk": [
+          {
+            "type": "/tmp",
+            "size": 200
+          },
+          {
+            "type": "/boot",
+            "size": 600
+          }
+        ]
+      },
+      {
+        "desc": "HTTP Plugin Test Server.",
+        "os": "CentOS 7.2 x64",
+        "arch": "x64",
+        "cpu": 4,
+        "memory": 17179869184,
+        "ip": "192.168.11.158",
+        "disk": [
+          {
+            "type": "/app",
+            "size": 100
+          }
+        ]
+      }
+    ]
+  }
+  
