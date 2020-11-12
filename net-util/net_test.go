@@ -25,3 +25,13 @@ func TestGetLocalIP(t *testing.T) {
 		})
 	})
 }
+
+func TestGetLocalIPv4s(t *testing.T) {
+	Convey("GetLocalIPv4s", t, func() {
+		Convey("Case1", func() {
+			ips, err := GetLocalIPv4s()
+			So(err, ShouldBeNil)
+			t.Logf("IP: %v\r\n", ips)
+		})
+	})
+}
