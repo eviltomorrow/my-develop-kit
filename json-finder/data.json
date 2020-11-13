@@ -4,18 +4,6 @@
     "totalCount": 2,
     "instanceList": [
       {
-        "parent": {
-          "name": "father",
-          "age": 10,
-          "child": [
-            {
-              "sport": "running"
-            },
-            {
-              "sport": "jumping"
-            }
-          ]
-        },
         "desc": "HTTP Plugin Test Server.",
         "os": "CentOS 7.2 x64",
         "arch": "x64",
