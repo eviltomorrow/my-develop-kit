@@ -1,91 +1,211 @@
 package finder
 
 import (
+	"errors"
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/tidwall/gjson"
+)
+
+//
+const (
+	ParentNodeType = "parent"
+	ChildNodeType  = "child"
 )
 
 //
 var (
-	ErrNotJSONObject = fmt.Errorf("Not JSON Object")
+	ErrKeyNotFound = errors.New("Not found the key")
 )
 
-// KeyNode key node
-type KeyNode struct {
-	Name        string      `json:"name"`         // 键名
-	IsRoot      bool        `json:"is_root"`      // 是否顶结点
-	Level       int         `json:"level"`        // 层级
-	Data        interface{} `json:"data"`         // 值
-	ChildNode   *KeyNode    `json:"child_node"`   // 子结点
-	BrotherNode *KeyNode    `json:"brother_node"` // 兄弟结点
+// Key string
+type Key struct {
+	Feilds     []string `json:"feilds"`
+	K          string   `json:"k"`
+	V          string   `json:"v"`
+	ParentKeys []*Key   `json:"parent_keys"`
+	IsFind     bool     `json:"is_find"`
+	ValueType  string   `json:"value_type"`
+
+	Err      error  `json:"error"`
+	nodeType string `json:"-"`
 }
 
-func (k *KeyNode) String() string {
+// Len len
+func (k *Key) Len() int {
+	return len(k.ParentKeys)
+}
+
+// Less less
+func (k *Key) Less(i, j int) bool {
+	return len(k.ParentKeys[i].Feilds) < len(k.ParentKeys[j].Feilds)
+}
+
+// Swap swap
+func (k *Key) Swap(i, j int) {
+	k.ParentKeys[i], k.ParentKeys[j] = k.ParentKeys[j], k.ParentKeys[i]
+}
+
+// E build error
+func (k *Key) E(err error) {
+	k.Err = err
+}
+
+// Find find
+func (k *Key) Find() {
+	k.IsFind = true
+}
+
+func (k *Key) String() string {
 	buf, _ := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(k)
 	return string(buf)
 }
 
-// BuildKeyTree build tree
-func BuildKeyTree(keys []string) (*KeyNode, error) {
-	var rootNode = &KeyNode{
-		IsRoot: true,
-		Level:  0,
-		Name:   "root",
-	}
+// BuildKey build key
+func BuildKey(parentKeys []string, valueKey string) (*Key, error) {
+	var pks = make([]*Key, 0, 4)
+	var vk = parseKey(valueKey)
+	for _, parentKey := range parentKeys {
+		var pk = parseKey(parentKey)
+		if len(pk) > len(vk) {
+			return nil, fmt.Errorf("The ParentKey[%s] has a higher depth than ValueKey[%s]", parentKey, valueKey)
+		}
 
-	for _, key := range keys {
-		var cache = make([]string, 0, 16)
-		var begin int
-		var flag bool
-		for i := 0; i < len(key); i++ {
-			if key[i] == '.' && !flag {
-				cache = append(cache, key[begin:i])
-				begin = i + 1
+		for i := 0; i < len(pk); i++ {
+			if i == len(pk)-1 {
+				break
 			}
-			if key[i] == '\\' {
-				flag = true
-			} else {
-				flag = false
+
+			if pk[i] != vk[i] {
+				return nil, fmt.Errorf("The PrimaryKey[%s] and ValueKey[%s] not belonging to the same tree", parentKey, valueKey)
 			}
 		}
 
-		if begin != len(key) {
-			cache = append(cache, key[begin:])
-		}
+		var k = &Key{
+			Feilds: pk,
+			K:      parentKey,
 
-		rootNode = buildNode(rootNode, 0, cache)
+			nodeType: ParentNodeType,
+		}
+		pks = append(pks, k)
 	}
-	return rootNode, nil
+
+	var k = &Key{
+		Feilds:     vk,
+		K:          valueKey,
+		ParentKeys: pks,
+
+		nodeType: ChildNodeType,
+	}
+	return k, nil
 }
 
-func buildNode(rootNode *KeyNode, index int, keys []string) *KeyNode {
-	var currentNode = rootNode
-	for i, key := range keys {
-		if currentNode.ChildNode == nil {
-			currentNode.ChildNode = &KeyNode{
-				Name:  key,
-				Level: i,
-			}
-			currentNode = currentNode.ChildNode
-		} else {
-			currentNode = currentNode.ChildNode
-			if currentNode.Name == key {
-				continue
-			}
+// GetKey get value with key
+func GetKey(results []gjson.Result, level int, key *Key) (*Key, error) {
+	if level > len(key.Feilds) {
+		return key, nil
+	}
+	if len(results) == 0 {
+		return key, nil
+	}
 
-			for currentNode.BrotherNode != nil {
-				currentNode = currentNode.BrotherNode
-				if currentNode.Name == key {
-					continue
-				}
+	var cache = make([]*Key, 0, 8)
+	var k = key.Feilds[level]
+	for _, result := range results {
+		var newKey = key
+		if key.nodeType == ChildNodeType {
+			newKey = deepCloneKey(key)
+		}
+		var current = result.Get(k)
+		if !current.Exists() {
+			key.Find()
+			key.E(ErrKeyNotFound)
+			return key, nil
+		}
+
+		switch {
+		case result.IsObject():
+			if level == len(key.Feilds)-1 {
+				result.String()
+			} else {
+
 			}
-			currentNode.BrotherNode = &KeyNode{
-				Name:  key,
-				Level: i,
-			}
-			currentNode = currentNode.BrotherNode
+		case result.IsArray():
+		default:
 		}
 	}
-	return rootNode
+	return nil, nil
+}
+
+// FindKey find value with key
+func FindKey(jsonStr string, key *Key) ([]string, error) {
+	if key == nil {
+		return nil, fmt.Errorf("The key is nil")
+	}
+
+	if !gjson.Valid(jsonStr) {
+		return nil, fmt.Errorf("Invalid JSON")
+	}
+
+	var result = gjson.Parse(jsonStr)
+	if !result.IsObject() {
+		return nil, fmt.Errorf("Not a JSON Object")
+	}
+
+	key, err := GetKey([]gjson.Result{result}, 0, key)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(key)
+	return nil, nil
+}
+
+func deepCloneKey(key *Key) *Key {
+	var feilds = make([]string, 0, len(key.Feilds))
+	for _, d := range key.Feilds {
+		feilds = append(feilds, d)
+	}
+
+	var pks []*Key
+	if key.nodeType == ParentNodeType {
+		pks = make([]*Key, 0, len(key.ParentKeys))
+		for _, pk := range key.ParentKeys {
+			pks = append(pks, deepCloneKey(pk))
+		}
+	}
+
+	var newKey = &Key{
+		Feilds:     feilds,
+		K:          key.K,
+		V:          key.V,
+		ParentKeys: pks,
+		IsFind:     key.IsFind,
+		ValueType:  key.ValueType,
+		Err:        key.Err,
+	}
+	return newKey
+}
+func parseKey(key string) []string {
+	var keys = make([]string, 0, 16)
+	var begin int
+	var flag bool
+
+	for i := 0; i < len(key); i++ {
+		if key[i] == '.' && !flag {
+			keys = append(keys, key[begin:i])
+			begin = i + 1
+		}
+		if key[i] == '\\' {
+			flag = true
+		} else {
+			flag = false
+		}
+	}
+
+	if begin != len(key) {
+		keys = append(keys, key[begin:])
+	}
+	return keys
 }

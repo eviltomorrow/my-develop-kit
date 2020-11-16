@@ -1,13 +1,44 @@
 package finder
 
-import "testing"
+import (
+	"testing"
 
-func TestBuildKeyTree(t *testing.T) {
-	var keys = []string{"a.b.c.d", "a.e.f.g", "a.d.f"}
-	tree, err := BuildKeyTree(keys)
-	if err != nil {
-		t.Fatalf("Error: %v\r\n", err)
-	}
+	. "github.com/smartystreets/goconvey/convey"
+)
 
-	t.Logf("Tree: %v", tree)
+func TestBuildKey(t *testing.T) {
+	Convey("Test Build Key", t, func() {
+		Convey("Case 1", func() {
+			var parentKey = []string{
+				"instance.cpu",
+				"instance.ip",
+			}
+			var valueKey = "instance.disk.type"
+			key, err := BuildKey(parentKey, valueKey)
+			So(err, ShouldBeNil)
+			t.Logf("Key: %v\r\n", key)
+		})
+
+		Convey("Case 2", func() {
+			var parentKey = []string{
+				"instance.cpu",
+				"instance.disk.type",
+			}
+			var valueKey = "instance.disk.value"
+			key, err := BuildKey(parentKey, valueKey)
+			So(err, ShouldBeNil)
+			t.Logf("Key: %v\r\n", key)
+		})
+
+		Convey("Case 3", func() {
+			var parentKey = []string{
+				"instance.cpu",
+				"instance.mem.type",
+			}
+			var valueKey = "instance.disk.value"
+			key, err := BuildKey(parentKey, valueKey)
+			So(err, ShouldNotBeNil)
+			t.Logf("Key: %v\r\n", key)
+		})
+	})
 }
