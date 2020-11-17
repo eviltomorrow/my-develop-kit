@@ -52,6 +52,7 @@ func TestFindKey(t *testing.T) {
 
 			var parentKey = []string{
 				"instanceList.ip",
+				"instanceList.disk.type",
 			}
 			var valueKey = "instanceList.disk.size"
 			key, err := BuildKey(parentKey, valueKey)
@@ -94,4 +95,22 @@ func TestSortParentKey(t *testing.T) {
 			t.Logf("Key: %s", key)
 		})
 	})
+}
+
+func BenchmarkFindKey(b *testing.B) {
+	buf, _ := ioutil.ReadFile("data.json")
+
+	var parentKey = []string{
+		"instanceList.ip",
+		"instanceList.disk.type",
+	}
+	var valueKey = "instanceList.disk.1"
+	key, _ := BuildKey(parentKey, valueKey)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		FindKey(string(buf), key)
+	}
+
 }

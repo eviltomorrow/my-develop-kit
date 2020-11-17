@@ -12,11 +12,8 @@ import (
 
 //
 const (
-	ParentNodeType      = "parent"
-	ChildNodeType       = "child"
-	ValueTypeJSONObject = "JSON Object"
-	ValueTypeJSONArray  = "JSON Array"
-	ValueTypeJSONValue  = "JSON Value"
+	ParentNodeType = "parent"
+	ChildNodeType  = "child"
 )
 
 //
@@ -29,9 +26,8 @@ type Key struct {
 	Feilds     []string `json:"feilds"`
 	K          string   `json:"k"`
 	V          string   `json:"v"`
-	ParentKeys []*Key   `json:"parent-keys"`
 	IsFind     bool     `json:"is_find"`
-	ValueType  string   `json:"value_type"`
+	ParentKeys []*Key   `json:"parent_keys"`
 
 	Err      error `json:"error"`
 	nodeType string
@@ -55,11 +51,6 @@ func (k *Key) Swap(i, j int) {
 // Val v
 func (k *Key) Val(v string) {
 	k.V = v
-}
-
-// ValType val type
-func (k *Key) ValType(vt string) {
-	k.ValueType = vt
 }
 
 // E build error
@@ -149,21 +140,20 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 		}
 
 		var current = result.Get(k)
-		newKey.Find()
-		if !current.Exists() {
-			newKey.E(ErrKeyNotFound)
-			cache = append(cache, newKey)
-			return cache, nil
-		}
 
-		// 计算基础值
 		switch {
-		case current.IsObject():
-			if level == len(newKey.Feilds)-1 {
-				newKey.Val(current.String())
-				newKey.ValType(ValueTypeJSONObject)
-				cache = append(cache, newKey)
-			} else {
+		case !current.Exists():
+			newKey.E(ErrKeyNotFound)
+			newKey.Find()
+
+		case level == len(newKey.Feilds)-1:
+			newKey.Val(current.String())
+			newKey.Find()
+
+		default:
+			// 计算基础值
+			switch {
+			case current.IsObject():
 				level++
 				data, err := GetKey([]gjson.Result{current}, level, newKey)
 				if err != nil {
@@ -171,14 +161,8 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 				}
 				level--
 				cache = append(cache, data...)
-			}
 
-		case current.IsArray():
-			if level == len(newKey.Feilds)-1 {
-				newKey.Val(current.String())
-				newKey.ValType(ValueTypeJSONArray)
-				cache = append(cache, newKey)
-			} else {
+			case current.IsArray():
 				var count = current.Get("#").Int()
 				var i int64
 				var collections = make([]gjson.Result, 0, count)
@@ -194,40 +178,33 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 				level--
 				cache = append(cache, data...)
 
+			default:
+				if level == len(newKey.Feilds)-1 {
+					newKey.Val(current.String())
+				} else {
+					newKey.E(ErrKeyNotFound)
+				}
+				newKey.Find()
 			}
+		}
 
-		default:
-			if level == len(newKey.Feilds)-1 {
-				newKey.Val(current.String())
-				newKey.ValType(ValueTypeJSONValue)
-			} else {
-				newKey.E(ErrKeyNotFound)
-			}
+		if newKey.IsFind {
 			cache = append(cache, newKey)
 		}
-		fmt.Println("No parent: ", newKey.String())
 
-		// 计算父值
-		for _, pk := range newKey.ParentKeys {
-			if level >= 0 && level == len(pk.Feilds)-1 {
-				pk.Find()
-				var current = result.Get(pk.Feilds[level])
-				if !current.Exists() {
-					pk.E(ErrKeyNotFound)
-				} else {
-					pk.Val(current.String())
-					switch {
-					case current.IsObject():
-						pk.ValType(ValueTypeJSONObject)
-					case current.IsArray():
-						pk.ValType(ValueTypeJSONArray)
-					default:
-						pk.ValType(ValueTypeJSONValue)
+		for _, k := range cache {
+			for _, pk := range k.ParentKeys {
+				if !pk.IsFind && level >= 0 && level == len(pk.Feilds)-1 {
+					pk.Find()
+					var current = result.Get(pk.Feilds[level])
+					if !current.Exists() {
+						pk.E(ErrKeyNotFound)
+					} else {
+						pk.Val(current.String())
 					}
 				}
 			}
 		}
-		fmt.Println("Have parent: ", newKey.String())
 	}
 
 	return cache, nil
@@ -253,8 +230,6 @@ func FindKey(jsonStr string, key *Key) ([]string, error) {
 		return nil, err
 	}
 
-	// buf, _ := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(cache)
-	// fmt.Printf("Cache: %s\r\n", buf)
 	return []string{fmt.Sprintf("%v", cache)}, nil
 }
 
@@ -279,7 +254,6 @@ func deepCloneKey(key *Key) *Key {
 		ParentKeys: pks,
 		IsFind:     key.IsFind,
 		nodeType:   key.nodeType,
-		ValueType:  key.ValueType,
 		Err:        key.Err,
 	}
 	return newKey
