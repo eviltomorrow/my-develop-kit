@@ -1,8 +1,10 @@
 package finder
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"sort"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/tidwall/gjson"
@@ -10,8 +12,11 @@ import (
 
 //
 const (
-	ParentNodeType = "parent"
-	ChildNodeType  = "child"
+	ParentNodeType      = "parent"
+	ChildNodeType       = "child"
+	ValueTypeJSONObject = "JSON Object"
+	ValueTypeJSONArray  = "JSON Array"
+	ValueTypeJSONValue  = "JSON Value"
 )
 
 //
@@ -24,12 +29,12 @@ type Key struct {
 	Feilds     []string `json:"feilds"`
 	K          string   `json:"k"`
 	V          string   `json:"v"`
-	ParentKeys []*Key   `json:"parent_keys"`
+	ParentKeys []*Key   `json:"parent-keys"`
 	IsFind     bool     `json:"is_find"`
 	ValueType  string   `json:"value_type"`
 
-	Err      error  `json:"error"`
-	nodeType string `json:"-"`
+	Err      error `json:"error"`
+	nodeType string
 }
 
 // Len len
@@ -47,6 +52,16 @@ func (k *Key) Swap(i, j int) {
 	k.ParentKeys[i], k.ParentKeys[j] = k.ParentKeys[j], k.ParentKeys[i]
 }
 
+// Val v
+func (k *Key) Val(v string) {
+	k.V = v
+}
+
+// ValType val type
+func (k *Key) ValType(vt string) {
+	k.ValueType = vt
+}
+
 // E build error
 func (k *Key) E(err error) {
 	k.Err = err
@@ -55,6 +70,20 @@ func (k *Key) E(err error) {
 // Find find
 func (k *Key) Find() {
 	k.IsFind = true
+}
+
+// PrintPtr print ptr
+func (k *Key) PrintPtr() {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("Current key: %p\r\n", k))
+	buffer.WriteString(fmt.Sprintf("\tFeilds: %p\r\n", k.Feilds))
+	buffer.WriteString("\tParentKeys: \r\n")
+
+	for _, pk := range k.ParentKeys {
+		buffer.WriteString(fmt.Sprintf("\t\tPK: %p\r\n", pk))
+	}
+
+	fmt.Printf("%s\r\n", buffer.String())
 }
 
 func (k *Key) String() string {
@@ -82,13 +111,12 @@ func BuildKey(parentKeys []string, valueKey string) (*Key, error) {
 			}
 		}
 
-		var k = &Key{
+		pks = append(pks, &Key{
 			Feilds: pk,
 			K:      parentKey,
 
 			nodeType: ParentNodeType,
-		}
-		pks = append(pks, k)
+		})
 	}
 
 	var k = &Key{
@@ -98,16 +126,18 @@ func BuildKey(parentKeys []string, valueKey string) (*Key, error) {
 
 		nodeType: ChildNodeType,
 	}
+
+	sort.Sort(k)
 	return k, nil
 }
 
 // GetKey get value with key
-func GetKey(results []gjson.Result, level int, key *Key) (*Key, error) {
+func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 	if level > len(key.Feilds) {
-		return key, nil
+		return []*Key{}, nil
 	}
 	if len(results) == 0 {
-		return key, nil
+		return []*Key{}, nil
 	}
 
 	var cache = make([]*Key, 0, 8)
@@ -117,25 +147,90 @@ func GetKey(results []gjson.Result, level int, key *Key) (*Key, error) {
 		if key.nodeType == ChildNodeType {
 			newKey = deepCloneKey(key)
 		}
+
 		var current = result.Get(k)
+		newKey.Find()
 		if !current.Exists() {
-			key.Find()
-			key.E(ErrKeyNotFound)
-			return key, nil
+			newKey.E(ErrKeyNotFound)
+			cache = append(cache, newKey)
+			return cache, nil
 		}
 
+		// 计算基础值
 		switch {
-		case result.IsObject():
-			if level == len(key.Feilds)-1 {
-				result.String()
+		case current.IsObject():
+			if level == len(newKey.Feilds)-1 {
+				newKey.Val(current.String())
+				newKey.ValType(ValueTypeJSONObject)
+				cache = append(cache, newKey)
 			} else {
+				level++
+				data, err := GetKey([]gjson.Result{current}, level, newKey)
+				if err != nil {
+					return nil, err
+				}
+				level--
+				cache = append(cache, data...)
+			}
+
+		case current.IsArray():
+			if level == len(newKey.Feilds)-1 {
+				newKey.Val(current.String())
+				newKey.ValType(ValueTypeJSONArray)
+				cache = append(cache, newKey)
+			} else {
+				var count = current.Get("#").Int()
+				var i int64
+				var collections = make([]gjson.Result, 0, count)
+				for ; i < count; i++ {
+					collections = append(collections, current.Get(fmt.Sprintf("%d", i)))
+				}
+
+				level++
+				data, err := GetKey(collections, level, newKey)
+				if err != nil {
+					return nil, err
+				}
+				level--
+				cache = append(cache, data...)
 
 			}
-		case result.IsArray():
+
 		default:
+			if level == len(newKey.Feilds)-1 {
+				newKey.Val(current.String())
+				newKey.ValType(ValueTypeJSONValue)
+			} else {
+				newKey.E(ErrKeyNotFound)
+			}
+			cache = append(cache, newKey)
 		}
+		fmt.Println("No parent: ", newKey.String())
+
+		// 计算父值
+		for _, pk := range newKey.ParentKeys {
+			if level >= 0 && level == len(pk.Feilds)-1 {
+				pk.Find()
+				var current = result.Get(pk.Feilds[level])
+				if !current.Exists() {
+					pk.E(ErrKeyNotFound)
+				} else {
+					pk.Val(current.String())
+					switch {
+					case current.IsObject():
+						pk.ValType(ValueTypeJSONObject)
+					case current.IsArray():
+						pk.ValType(ValueTypeJSONArray)
+					default:
+						pk.ValType(ValueTypeJSONValue)
+					}
+				}
+			}
+		}
+		fmt.Println("Have parent: ", newKey.String())
 	}
-	return nil, nil
+
+	return cache, nil
 }
 
 // FindKey find value with key
@@ -153,13 +248,14 @@ func FindKey(jsonStr string, key *Key) ([]string, error) {
 		return nil, fmt.Errorf("Not a JSON Object")
 	}
 
-	key, err := GetKey([]gjson.Result{result}, 0, key)
+	cache, err := GetKey([]gjson.Result{result}, 0, key)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(key)
-	return nil, nil
+	// buf, _ := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(cache)
+	// fmt.Printf("Cache: %s\r\n", buf)
+	return []string{fmt.Sprintf("%v", cache)}, nil
 }
 
 func deepCloneKey(key *Key) *Key {
@@ -169,7 +265,7 @@ func deepCloneKey(key *Key) *Key {
 	}
 
 	var pks []*Key
-	if key.nodeType == ParentNodeType {
+	if key.nodeType == ChildNodeType {
 		pks = make([]*Key, 0, len(key.ParentKeys))
 		for _, pk := range key.ParentKeys {
 			pks = append(pks, deepCloneKey(pk))
@@ -182,6 +278,7 @@ func deepCloneKey(key *Key) *Key {
 		V:          key.V,
 		ParentKeys: pks,
 		IsFind:     key.IsFind,
+		nodeType:   key.nodeType,
 		ValueType:  key.ValueType,
 		Err:        key.Err,
 	}
