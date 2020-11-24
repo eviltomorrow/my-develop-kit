@@ -15,7 +15,7 @@ func TestBuildKey(t *testing.T) {
 				"instance.ip",
 			}
 			var valueKey = "instance.disk.type"
-			key, err := BuildKey(parentKey, valueKey)
+			key, err := BuildKey(parentKey, nil, valueKey)
 			So(err, ShouldBeNil)
 			t.Logf("Key: %v\r\n", key)
 		})
@@ -26,7 +26,7 @@ func TestBuildKey(t *testing.T) {
 				"instance.disk.type",
 			}
 			var valueKey = "instance.disk.value"
-			key, err := BuildKey(parentKey, valueKey)
+			key, err := BuildKey(parentKey, nil, valueKey)
 			So(err, ShouldBeNil)
 			t.Logf("Key: %v\r\n", key)
 		})
@@ -37,7 +37,7 @@ func TestBuildKey(t *testing.T) {
 				"instance.mem.type",
 			}
 			var valueKey = "instance.disk.value"
-			key, err := BuildKey(parentKey, valueKey)
+			key, err := BuildKey(parentKey, nil, valueKey)
 			So(err, ShouldNotBeNil)
 			t.Logf("Key: %v\r\n", key)
 		})
@@ -54,8 +54,11 @@ func TestFindKey(t *testing.T) {
 				"instanceList.ip",
 				"instanceList.disk.type",
 			}
+			var brotherKey = []string{
+				"instanceList.disk.type",
+			}
 			var valueKey = "instanceList.disk.size"
-			key, err := BuildKey(parentKey, valueKey)
+			key, err := BuildKey(parentKey, brotherKey, valueKey)
 			So(err, ShouldBeNil)
 
 			FindKey(string(buf), key)
@@ -69,8 +72,11 @@ func TestDeepCloneKey(t *testing.T) {
 			var parentKey = []string{
 				"instance.ip",
 			}
+			var brotherKey = []string{
+				"instance.disk.type",
+			}
 			var valueKey = "instance.disk.type"
-			key, err := BuildKey(parentKey, valueKey)
+			key, err := BuildKey(parentKey, brotherKey, valueKey)
 			So(err, ShouldBeNil)
 			key.PrintPtr()
 
@@ -90,7 +96,7 @@ func TestSortParentKey(t *testing.T) {
 				"instance.c",
 			}
 			var valueKey = "instance.disk.type"
-			key, err := BuildKey(parentKey, valueKey)
+			key, err := BuildKey(parentKey, nil, valueKey)
 			So(err, ShouldBeNil)
 			t.Logf("Key: %s", key)
 		})
@@ -105,7 +111,7 @@ func BenchmarkFindKey(b *testing.B) {
 		"instanceList.disk.type",
 	}
 	var valueKey = "instanceList.disk.1"
-	key, _ := BuildKey(parentKey, valueKey)
+	key, _ := BuildKey(parentKey, nil, valueKey)
 
 	b.ResetTimer()
 

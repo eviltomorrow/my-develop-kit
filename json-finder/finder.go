@@ -12,8 +12,9 @@ import (
 
 //
 const (
-	ParentNodeType = "parent"
-	ChildNodeType  = "child"
+	ParentNodeType  = "parent"
+	ChildNodeType   = "child"
+	BrotherNodeType = "brother"
 )
 
 //
@@ -23,11 +24,12 @@ var (
 
 // Key string
 type Key struct {
-	Feilds     []string `json:"feilds"`
-	K          string   `json:"k"`
-	V          string   `json:"v"`
-	IsFind     bool     `json:"is_find"`
-	ParentKeys []*Key   `json:"parent_keys"`
+	Feilds      []string `json:"feilds"`
+	K           string   `json:"k"`
+	V           string   `json:"v"`
+	IsFind      bool     `json:"is_find"`
+	ParentKeys  []*Key   `json:"parent_keys"`
+	BrotherKeys []*Key   `json:"brother_keys"`
 
 	Err      error `json:"error"`
 	nodeType string
@@ -74,6 +76,12 @@ func (k *Key) PrintPtr() {
 		buffer.WriteString(fmt.Sprintf("\t\tPK: %p\r\n", pk))
 	}
 
+	buffer.WriteString("\tBrotherKeys: \r\n")
+
+	for _, bk := range k.BrotherKeys {
+		buffer.WriteString(fmt.Sprintf("\t\tBK: %p\r\n", bk))
+	}
+
 	fmt.Printf("%s\r\n", buffer.String())
 }
 
@@ -83,8 +91,8 @@ func (k *Key) String() string {
 }
 
 // BuildKey build key
-func BuildKey(parentKeys []string, valueKey string) (*Key, error) {
-	var pks = make([]*Key, 0, 4)
+func BuildKey(parentKeys []string, brotherKeys []string, valueKey string) (*Key, error) {
+	var pks = make([]*Key, 0, len(parentKeys))
 	var vk = parseKey(valueKey)
 	for _, parentKey := range parentKeys {
 		var pk = parseKey(parentKey)
@@ -110,10 +118,35 @@ func BuildKey(parentKeys []string, valueKey string) (*Key, error) {
 		})
 	}
 
+	var bks = make([]*Key, 0, len(brotherKeys))
+	for _, brotherKey := range brotherKeys {
+		var bk = parseKey(brotherKey)
+		if len(bk) != len(vk) {
+			return nil, fmt.Errorf("The BrotherKey[%s] has a different depth with ValueKey[%s]", brotherKey, valueKey)
+		}
+
+		for i, k := range vk {
+			if i == len(vk)-1 {
+				break
+			}
+			if bk[i] != k {
+				return nil, fmt.Errorf("The BrotherKey[%s] and ValueKey[%s] not belonging to the same tree", brotherKey, valueKey)
+			}
+		}
+
+		bks = append(bks, &Key{
+			Feilds: bk,
+			K:      brotherKey,
+
+			nodeType: BrotherNodeType,
+		})
+	}
+
 	var k = &Key{
-		Feilds:     vk,
-		K:          valueKey,
-		ParentKeys: pks,
+		Feilds:      vk,
+		K:           valueKey,
+		ParentKeys:  pks,
+		BrotherKeys: bks,
 
 		nodeType: ChildNodeType,
 	}
@@ -204,6 +237,18 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 					}
 				}
 			}
+
+			for _, bk := range k.BrotherKeys {
+				if !bk.IsFind && level >= 0 && level == len(bk.Feilds)-1 {
+					bk.Find()
+					var current = result.Get(bk.Feilds[level])
+					if !current.Exists() {
+						bk.E(ErrKeyNotFound)
+					} else {
+						bk.Val(current.String())
+					}
+				}
+			}
 		}
 	}
 
@@ -230,6 +275,9 @@ func FindKey(jsonStr string, key *Key) ([]string, error) {
 		return nil, err
 	}
 
+	for _, k := range cache {
+		fmt.Printf("k: %v\r\n", k.String())
+	}
 	return []string{fmt.Sprintf("%v", cache)}, nil
 }
 
@@ -240,21 +288,28 @@ func deepCloneKey(key *Key) *Key {
 	}
 
 	var pks []*Key
+	var bks []*Key
 	if key.nodeType == ChildNodeType {
 		pks = make([]*Key, 0, len(key.ParentKeys))
 		for _, pk := range key.ParentKeys {
 			pks = append(pks, deepCloneKey(pk))
 		}
+
+		bks = make([]*Key, 0, len(key.BrotherKeys))
+		for _, bk := range key.BrotherKeys {
+			bks = append(bks, deepCloneKey(bk))
+		}
 	}
 
 	var newKey = &Key{
-		Feilds:     feilds,
-		K:          key.K,
-		V:          key.V,
-		ParentKeys: pks,
-		IsFind:     key.IsFind,
-		nodeType:   key.nodeType,
-		Err:        key.Err,
+		Feilds:      feilds,
+		K:           key.K,
+		V:           key.V,
+		ParentKeys:  pks,
+		BrotherKeys: bks,
+		IsFind:      key.IsFind,
+		nodeType:    key.nodeType,
+		Err:         key.Err,
 	}
 	return newKey
 }

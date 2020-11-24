@@ -1,0 +1,761 @@
+{
+    "kind": "ServiceList",
+    "apiVersion": "v1",
+    "metadata": {
+      "selfLink": "/api/v1/services",
+      "resourceVersion": "908145755"
+    },
+    "items": [
+      {
+        "metadata": {
+          "name": "kubernetes",
+          "namespace": "default",
+          "selfLink": "/api/v1/namespaces/default/services/kubernetes",
+          "uid": "8cc46ac0-651f-11ea-8647-005056ba39a3",
+          "resourceVersion": "15",
+          "creationTimestamp": "2020-03-13T11:41:16Z",
+          "labels": {
+            "component": "apiserver",
+            "provider": "kubernetes"
+          }
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "https",
+              "protocol": "TCP",
+              "port": 443,
+              "targetPort": 6443
+            }
+          ],
+          "clusterIP": "10.254.0.1",
+          "type": "ClusterIP",
+          "sessionAffinity": "ClientIP",
+          "sessionAffinityConfig": {
+            "clientIP": {
+              "timeoutSeconds": 10800
+            }
+          }
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "elasticsearch-logging",
+          "namespace": "kube-system",
+          "selfLink": "/api/v1/namespaces/kube-system/services/elasticsearch-logging",
+          "uid": "0a6b1a07-755b-11ea-b4b9-005056ba39a3",
+          "resourceVersion": "2572539",
+          "creationTimestamp": "2020-04-03T03:27:26Z",
+          "labels": {
+            "k8s-app": "elasticsearch-logging",
+            "kubernetes.io/cluster-service": "true",
+            "kubernetes.io/name": "Elasticsearch",
+            "addonmanager.kubernetes.io/mode": "Reconcile"
+          }
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "db",
+              "protocol": "TCP",
+              "port": 9200,
+              "targetPort": "db"
+            },
+            {
+              "name": "transport",
+              "protocol": "TCP",
+              "port": 9300,
+              "targetPort": "transport"
+            }
+          ],
+          "selector": {
+            "k8s-app": "elasticsearch-logging"
+          },
+          "clusterIP": "None",
+          "type": "ClusterIP",
+          "sessionAffinity": "None"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "kube-dns",
+          "namespace": "kube-system",
+          "selfLink": "/api/v1/namespaces/kube-system/services/kube-dns",
+          "uid": "6bc277d3-6530-11ea-8647-005056ba39a3",
+          "resourceVersion": "12049",
+          "creationTimestamp": "2020-03-13T13:42:02Z",
+          "labels": {
+            "kubernetes.io/cluster-service": "true",
+            "kubernetes.io/name": "KubeDNS",
+            "addonmanager.kubernetes.io/mode": "Reconcile",
+            "k8s-app": "kube-dns"
+          }
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "dns",
+              "protocol": "UDP",
+              "port": 53,
+              "targetPort": 53
+            },
+            {
+              "name": "dns-tcp",
+              "protocol": "TCP",
+              "port": 53,
+              "targetPort": 53
+            }
+          ],
+          "selector": {
+            "k8s-app": "kube-dns"
+          },
+          "clusterIP": "10.254.0.2",
+          "type": "ClusterIP",
+          "sessionAffinity": "None"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "bit-msa-apollo-conf-dev",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/bit-msa-apollo-conf-dev",
+          "uid": "7e8a9fb1-ade7-11ea-9de1-005056ba39a3",
+          "resourceVersion": "248682843",
+          "creationTimestamp": "2020-06-14T02:33:56Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "bit-msa-apollo-conf-dev-smbfui",
+              "protocol": "TCP",
+              "port": 45542,
+              "targetPort": 45542,
+              "nodePort": 45542
+            }
+          ],
+          "selector": {
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf",
+            "selectorServiceName": "bit-msa-apollo-conf-dev"
+          },
+          "clusterIP": "10.254.29.126",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "ceqzibfs-1594174192719",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/ceqzibfs-1594174192719",
+          "uid": "1e0a0a6f-c0c0-11ea-9de1-005056ba39a3",
+          "resourceVersion": "517499285",
+          "creationTimestamp": "2020-07-08T02:09:55Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "ceqzibfs-1594174192719-ipvtmg",
+              "protocol": "TCP",
+              "port": 45547,
+              "targetPort": 45547,
+              "nodePort": 45547
+            }
+          ],
+          "selector": {
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf",
+            "selectorServiceName": "ceqzibfs-1594174192719"
+          },
+          "clusterIP": "10.254.155.10",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "devbitmsaapolloadminservice",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/devbitmsaapolloadminservice",
+          "uid": "79edaff7-d6f5-11ea-9de1-005056ba39a3",
+          "resourceVersion": "844336725",
+          "creationTimestamp": "2020-08-05T08:27:18Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "devbitmsaapolloadminservice-qurgdr",
+              "protocol": "TCP",
+              "port": 45541,
+              "targetPort": 45541,
+              "nodePort": 45541
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "devbitmsaapolloadminservice",
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf"
+          },
+          "clusterIP": "10.254.230.48",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "devbitmsagateway",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/devbitmsagateway",
+          "uid": "0c3ec8a3-d0d6-11ea-9de1-005056ba39a3",
+          "resourceVersion": "749038982",
+          "creationTimestamp": "2020-07-28T13:27:13Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "devbitmsagateway-yostcv",
+              "protocol": "TCP",
+              "port": 45535,
+              "targetPort": 45535,
+              "nodePort": 45535
+            }
+          ],
+          "selector": {
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf",
+            "selectorServiceName": "devbitmsagateway"
+          },
+          "clusterIP": "10.254.224.21",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "devbitmsapasm",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/devbitmsapasm",
+          "uid": "4ef0c279-ccb3-11ea-9de1-005056ba39a3",
+          "resourceVersion": "686933386",
+          "creationTimestamp": "2020-07-23T07:08:28Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "devbitmsapasm-grkhxr",
+              "protocol": "TCP",
+              "port": 45537,
+              "targetPort": 45537,
+              "nodePort": 45537
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "devbitmsapasm",
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf"
+          },
+          "clusterIP": "10.254.134.62",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "devbitmsapasmapi",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/devbitmsapasmapi",
+          "uid": "bc3850c2-ccb9-11ea-9de1-005056ba39a3",
+          "resourceVersion": "687242457",
+          "creationTimestamp": "2020-07-23T07:54:28Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "devbitmsapasmapi-fehesz",
+              "protocol": "TCP",
+              "port": 45540,
+              "targetPort": 45540,
+              "nodePort": 45540
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "devbitmsapasmapi",
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf"
+          },
+          "clusterIP": "10.254.64.236",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "devmsabitgatewaybg",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/devmsabitgatewaybg",
+          "uid": "01acde2a-d0d9-11ea-9de1-005056ba39a3",
+          "resourceVersion": "749246941",
+          "creationTimestamp": "2020-07-28T13:48:24Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "devmsabitgatewaybg-rpmgqw",
+              "protocol": "TCP",
+              "port": 45539,
+              "targetPort": 45539,
+              "nodePort": 45539
+            }
+          ],
+          "selector": {
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf",
+            "selectorServiceName": "devmsabitgatewaybg"
+          },
+          "clusterIP": "10.254.179.200",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "devmsasso",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/devmsasso",
+          "uid": "4c07ea0c-cce7-11ea-9de1-005056ba39a3",
+          "resourceVersion": "689519690",
+          "creationTimestamp": "2020-07-23T13:20:37Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "devmsasso-lisigm",
+              "protocol": "TCP",
+              "port": 45538,
+              "targetPort": 45538,
+              "nodePort": 45538
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "devmsasso",
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf"
+          },
+          "clusterIP": "10.254.35.142",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "fatbitmsagatewaybg",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/fatbitmsagatewaybg",
+          "uid": "36343b88-cbec-11ea-9de1-005056ba39a3",
+          "resourceVersion": "676970231",
+          "creationTimestamp": "2020-07-22T07:23:17Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "fatbitmsagatewaybg-hgkgga",
+              "protocol": "TCP",
+              "port": 45556,
+              "targetPort": 45556,
+              "nodePort": 45556
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "fatbitmsagatewaybg",
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf"
+          },
+          "clusterIP": "10.254.249.51",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "pinjeayc-1594132179890",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/pinjeayc-1594132179890",
+          "uid": "4c99a7c5-c05e-11ea-9de1-005056ba39a3",
+          "resourceVersion": "510779113",
+          "creationTimestamp": "2020-07-07T14:29:43Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "pinjeayc-1594132179890-kreedp",
+              "protocol": "TCP",
+              "port": 45548,
+              "targetPort": 45548,
+              "nodePort": 45548
+            }
+          ],
+          "selector": {
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf",
+            "selectorServiceName": "pinjeayc-1594132179890"
+          },
+          "clusterIP": "10.254.66.245",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "protbitapolloportal",
+          "namespace": "osihzhzlaktpgfppieitcetixf",
+          "selfLink": "/api/v1/namespaces/osihzhzlaktpgfppieitcetixf/services/protbitapolloportal",
+          "uid": "e54902f8-d6ee-11ea-9de1-005056ba39a3",
+          "resourceVersion": "843983784",
+          "creationTimestamp": "2020-08-05T07:40:12Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "protbitapolloportal-pxklpw",
+              "protocol": "TCP",
+              "port": 45507,
+              "targetPort": 45507,
+              "nodePort": 45507
+            }
+          ],
+          "selector": {
+            "domain": "osihzhzlaktpgfppieitcetixf",
+            "selectorNamespaceName": "osihzhzlaktpgfppieitcetixf",
+            "selectorServiceName": "protbitapolloportal"
+          },
+          "clusterIP": "10.254.74.251",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "metrics-server",
+          "namespace": "prometheus",
+          "selfLink": "/api/v1/namespaces/prometheus/services/metrics-server",
+          "uid": "ec5c9420-6534-11ea-8647-005056ba39a3",
+          "resourceVersion": "15164",
+          "creationTimestamp": "2020-03-13T14:14:16Z",
+          "labels": {
+            "kubernetes.io/name": "Metrics-server"
+          }
+        },
+        "spec": {
+          "ports": [
+            {
+              "protocol": "TCP",
+              "port": 443,
+              "targetPort": 443
+            }
+          ],
+          "selector": {
+            "k8s-app": "metrics-server"
+          },
+          "clusterIP": "10.254.174.130",
+          "type": "ClusterIP",
+          "sessionAffinity": "None"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "bit-bpc-admin-1596032547247",
+          "namespace": "roiycfuvkpwolhbnsvjhpxtcsu",
+          "selfLink": "/api/v1/namespaces/roiycfuvkpwolhbnsvjhpxtcsu/services/bit-bpc-admin-1596032547247",
+          "uid": "2eadc81d-d1a7-11ea-9de1-005056ba39a3",
+          "resourceVersion": "762376688",
+          "creationTimestamp": "2020-07-29T14:24:16Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "bit-bpc-admin-1596032547247-ptygsg",
+              "protocol": "TCP",
+              "port": 46041,
+              "targetPort": 46041,
+              "nodePort": 46044
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "bit-bpc-admin-1596032547247",
+            "domain": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorNamespaceName": "roiycfuvkpwolhbnsvjhpxtcsu"
+          },
+          "clusterIP": "10.254.157.57",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "cquilsrl-1596340340651",
+          "namespace": "roiycfuvkpwolhbnsvjhpxtcsu",
+          "selfLink": "/api/v1/namespaces/roiycfuvkpwolhbnsvjhpxtcsu/services/cquilsrl-1596340340651",
+          "uid": "92d8b3c3-d473-11ea-9de1-005056ba39a3",
+          "resourceVersion": "808259494",
+          "creationTimestamp": "2020-08-02T03:52:23Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "cquilsrl-1596340340651-hyokip",
+              "protocol": "TCP",
+              "port": 46041,
+              "targetPort": 46041,
+              "nodePort": 46041
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "cquilsrl-1596340340651",
+            "domain": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorNamespaceName": "roiycfuvkpwolhbnsvjhpxtcsu"
+          },
+          "clusterIP": "10.254.224.103",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "mongo-1596022559357",
+          "namespace": "roiycfuvkpwolhbnsvjhpxtcsu",
+          "selfLink": "/api/v1/namespaces/roiycfuvkpwolhbnsvjhpxtcsu/services/mongo-1596022559357",
+          "uid": "af9bd67b-d18f-11ea-9de1-005056ba39a3",
+          "resourceVersion": "760976814",
+          "creationTimestamp": "2020-07-29T11:36:04Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "mongo-1596022559357-cfwrbw",
+              "protocol": "TCP",
+              "port": 27017,
+              "targetPort": 27017,
+              "nodePort": 27017
+            }
+          ],
+          "selector": {
+            "domain": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorNamespaceName": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorServiceName": "mongo-1596022559357"
+          },
+          "clusterIP": "10.254.210.247",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "mysql-1596022548598",
+          "namespace": "roiycfuvkpwolhbnsvjhpxtcsu",
+          "selfLink": "/api/v1/namespaces/roiycfuvkpwolhbnsvjhpxtcsu/services/mysql-1596022548598",
+          "uid": "a942e459-d18f-11ea-9de1-005056ba39a3",
+          "resourceVersion": "760975395",
+          "creationTimestamp": "2020-07-29T11:35:53Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "mysql-1596022548598-yyygie",
+              "protocol": "TCP",
+              "port": 3306,
+              "targetPort": 3306,
+              "nodePort": 13306
+            }
+          ],
+          "selector": {
+            "domain": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorNamespaceName": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorServiceName": "mysql-1596022548598"
+          },
+          "clusterIP": "10.254.10.196",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "redis-1596022553662",
+          "namespace": "roiycfuvkpwolhbnsvjhpxtcsu",
+          "selfLink": "/api/v1/namespaces/roiycfuvkpwolhbnsvjhpxtcsu/services/redis-1596022553662",
+          "uid": "acb2cff1-d18f-11ea-9de1-005056ba39a3",
+          "resourceVersion": "760976176",
+          "creationTimestamp": "2020-07-29T11:35:59Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "redis-1596022553662-wuwlql",
+              "protocol": "TCP",
+              "port": 6379,
+              "targetPort": 6379,
+              "nodePort": 6379
+            }
+          ],
+          "selector": {
+            "selectorServiceName": "redis-1596022553662",
+            "domain": "roiycfuvkpwolhbnsvjhpxtcsu",
+            "selectorNamespaceName": "roiycfuvkpwolhbnsvjhpxtcsu"
+          },
+          "clusterIP": "10.254.46.77",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      },
+      {
+        "metadata": {
+          "name": "ggqepmsx-1588941735084",
+          "namespace": "vxgszchbyosqemxmbxsaqmngfu",
+          "selfLink": "/api/v1/namespaces/vxgszchbyosqemxmbxsaqmngfu/services/ggqepmsx-1588941735084",
+          "uid": "5b76c6b1-9129-11ea-ad60-6ab88f23bbfb",
+          "resourceVersion": "14163687",
+          "creationTimestamp": "2020-05-08T12:42:20Z"
+        },
+        "spec": {
+          "ports": [
+            {
+              "name": "ggqepmsx-1588941735084-rknnce",
+              "protocol": "TCP",
+              "port": 22001,
+              "targetPort": 22001,
+              "nodePort": 22001
+            }
+          ],
+          "selector": {
+            "domain": "vxgszchbyosqemxmbxsaqmngfu",
+            "selectorNamespaceName": "vxgszchbyosqemxmbxsaqmngfu",
+            "selectorServiceName": "ggqepmsx-1588941735084"
+          },
+          "clusterIP": "10.254.240.21",
+          "type": "NodePort",
+          "sessionAffinity": "None",
+          "externalTrafficPolicy": "Cluster"
+        },
+        "status": {
+          "loadBalancer": {
+            
+          }
+        }
+      }
+    ]
+  }
