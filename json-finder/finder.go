@@ -24,7 +24,7 @@ var (
 
 // Key string
 type Key struct {
-	Feilds      []string `json:"feilds"`
+	Fields      []string `json:"fields"`
 	K           string   `json:"k"`
 	V           string   `json:"v"`
 	IsFind      bool     `json:"is_find"`
@@ -42,7 +42,7 @@ func (k *Key) Len() int {
 
 // Less less
 func (k *Key) Less(i, j int) bool {
-	return len(k.ParentKeys[i].Feilds) < len(k.ParentKeys[j].Feilds)
+	return len(k.ParentKeys[i].Fields) < len(k.ParentKeys[j].Fields)
 }
 
 // Swap swap
@@ -69,7 +69,7 @@ func (k *Key) Find() {
 func (k *Key) PrintPtr() {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("Current key: %p\r\n", k))
-	buffer.WriteString(fmt.Sprintf("\tFeilds: %p\r\n", k.Feilds))
+	buffer.WriteString(fmt.Sprintf("\tFields: %p\r\n", k.Fields))
 	buffer.WriteString("\tParentKeys: \r\n")
 
 	for _, pk := range k.ParentKeys {
@@ -111,7 +111,7 @@ func BuildKey(parentKeys []string, brotherKeys []string, valueKey string) (*Key,
 		}
 
 		pks = append(pks, &Key{
-			Feilds: pk,
+			Fields: pk,
 			K:      parentKey,
 
 			nodeType: ParentNodeType,
@@ -135,7 +135,7 @@ func BuildKey(parentKeys []string, brotherKeys []string, valueKey string) (*Key,
 		}
 
 		bks = append(bks, &Key{
-			Feilds: bk,
+			Fields: bk,
 			K:      brotherKey,
 
 			nodeType: BrotherNodeType,
@@ -143,7 +143,7 @@ func BuildKey(parentKeys []string, brotherKeys []string, valueKey string) (*Key,
 	}
 
 	var k = &Key{
-		Feilds:      vk,
+		Fields:      vk,
 		K:           valueKey,
 		ParentKeys:  pks,
 		BrotherKeys: bks,
@@ -157,7 +157,7 @@ func BuildKey(parentKeys []string, brotherKeys []string, valueKey string) (*Key,
 
 // GetKey get value with key
 func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
-	if level > len(key.Feilds) {
+	if level > len(key.Fields) {
 		return []*Key{}, nil
 	}
 	if len(results) == 0 {
@@ -165,7 +165,7 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 	}
 
 	var cache = make([]*Key, 0, 8)
-	var k = key.Feilds[level]
+	var k = key.Fields[level]
 	for _, result := range results {
 		var newKey = key
 		if key.nodeType == ChildNodeType {
@@ -179,7 +179,7 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 			newKey.E(ErrKeyNotFound)
 			newKey.Find()
 
-		case level == len(newKey.Feilds)-1:
+		case level == len(newKey.Fields)-1:
 			newKey.Val(current.String())
 			newKey.Find()
 
@@ -212,7 +212,7 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 				cache = append(cache, data...)
 
 			default:
-				if level == len(newKey.Feilds)-1 {
+				if level == len(newKey.Fields)-1 {
 					newKey.Val(current.String())
 				} else {
 					newKey.E(ErrKeyNotFound)
@@ -227,9 +227,9 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 
 		for _, k := range cache {
 			for _, pk := range k.ParentKeys {
-				if !pk.IsFind && level >= 0 && level == len(pk.Feilds)-1 {
+				if !pk.IsFind && level >= 0 && level == len(pk.Fields)-1 {
 					pk.Find()
-					var current = result.Get(pk.Feilds[level])
+					var current = result.Get(pk.Fields[level])
 					if !current.Exists() {
 						pk.E(ErrKeyNotFound)
 					} else {
@@ -239,9 +239,9 @@ func GetKey(results []gjson.Result, level int, key *Key) ([]*Key, error) {
 			}
 
 			for _, bk := range k.BrotherKeys {
-				if !bk.IsFind && level >= 0 && level == len(bk.Feilds)-1 {
+				if !bk.IsFind && level >= 0 && level == len(bk.Fields)-1 {
 					bk.Find()
-					var current = result.Get(bk.Feilds[level])
+					var current = result.Get(bk.Fields[level])
 					if !current.Exists() {
 						bk.E(ErrKeyNotFound)
 					} else {
@@ -282,9 +282,9 @@ func FindKey(jsonStr string, key *Key) ([]string, error) {
 }
 
 func deepCloneKey(key *Key) *Key {
-	var feilds = make([]string, 0, len(key.Feilds))
-	for _, d := range key.Feilds {
-		feilds = append(feilds, d)
+	var fields = make([]string, 0, len(key.Fields))
+	for _, d := range key.Fields {
+		fields = append(fields, d)
 	}
 
 	var pks []*Key
@@ -302,7 +302,7 @@ func deepCloneKey(key *Key) *Key {
 	}
 
 	var newKey = &Key{
-		Feilds:      feilds,
+		Fields:      fields,
 		K:           key.K,
 		V:           key.V,
 		ParentKeys:  pks,
