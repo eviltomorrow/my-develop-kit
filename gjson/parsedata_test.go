@@ -3,8 +3,6 @@ package httpclient
 import (
 	"regexp"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 var testJSON = `{
@@ -23,12 +21,8 @@ var reg = regexp.MustCompile("\\s+")
 
 func TestGetJSONValue(t *testing.T) {
 	var data = reg.ReplaceAllString(testJSON, "")
-	Convey("Test GetJSONValue", t, func() {
-		Convey("JSON: ", func() {
-			result, err := GetJSON(data, "friends.age")
-			So(err, ShouldBeNil)
-			t.Logf("%v", err)
-			t.Logf("%v", result)
-		})
-	})
+	result, err := GetJSON(data, "friends.age")
+	t.Logf("%v", err)
+	t.Logf("%v", result)
+
 }
