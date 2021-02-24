@@ -6,13 +6,18 @@ import (
 	"log"
 	"time"
 
+	"github.com/eviltomorrow/my-develop-kit/grpc-go-etcd/grpclb"
 	"github.com/eviltomorrow/my-develop-kit/grpc-go/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/resolver"
 )
 
 func main() {
+	r := grpclb.NewResolver("test", nil)
+	resolver.Register(r)
 	// Set up a connection to the server.
-	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
+	conn, err := grpc.Dial(fmt.Sprintf("%s:///%s", r.Scheme(), "a"), grpc.WithInsecure(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -27,4 +32,5 @@ func main() {
 		log.Fatalf("SayHello error: %v", err)
 	}
 	fmt.Println(repley.Message)
+
 }

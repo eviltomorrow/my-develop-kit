@@ -2,88 +2,77 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 )
 
-// Transcript t
-type Transcript struct {
-	English int
-	Math    int
-	Artical int
-}
-
-// User user
-type User struct {
-	ID         int
-	Name       string
-	Age        int
-	Transcript *Transcript
-}
-
-// DoSomething do something
-func (u User) DoSomething() {
-	fmt.Println("do something!")
-}
-
-// DoAnything do anything
-func (u User) DoAnything(count int, thing string) {
-	fmt.Printf("count: %d, thing: %v\r\n", count, thing)
-}
-
 func main() {
-	var num float32 = 1.23
-	log.Printf("type: %v\r\n", reflect.TypeOf(num))
+	demo1()
+	demo2()
+	demo3()
+}
 
-	log.Printf("value: %v\r\n", reflect.ValueOf(num))
-	log.Printf("kind: %v\r\n", reflect.ValueOf(num).Kind())
-	log.Printf("type: %v\r\n", reflect.TypeOf(&num))
-	log.Printf("value: %v\r\n", reflect.ValueOf(&num))
-	log.Printf("kind: %v\r\n", reflect.ValueOf(&num).Kind())
-	log.Printf("%v\r\n", reflect.ValueOf(&num).Interface().(*float32))
-	log.Printf("%v\r\n", reflect.ValueOf(num).Interface().(float32))
+func demo1() {
+	var num interface{} = 100
+	var numType = reflect.TypeOf(num)
+	fmt.Printf("Num=100, kind: %v\r\n", numType.Kind())
+	fmt.Printf("Num=100, Name: %v\r\n", numType.Name())
+	fmt.Printf("Num=100, PkgPath: %v\r\n", numType.PkgPath())
+	fmt.Printf("Num=100, Size: %v\r\n", numType.Size())
+	fmt.Printf("Num=100, Bits: %d\r\n", numType.Bits())
+}
 
-	// 遍历属性和方法
-	var user = User{
-		ID:   1,
-		Name: "shepard",
-		Age:  21,
-		Transcript: &Transcript{
-			English: 90,
-			Math:    0,
-			Artical: 100,
-		},
-	}
-	log.Printf("type elem: %v\r\n", reflect.TypeOf(&user).Elem())
-	var userType = reflect.TypeOf(user)
-	log.Printf("user type: %v\r\n", userType.Name())
-	var userValue = reflect.ValueOf(user)
-	log.Printf("user value: %v\r\n", userValue)
-	log.Printf("user value1: %v\r\n", reflect.ValueOf(&user))
-	for i := 0; i < userType.NumField(); i++ {
-		var field = userType.Field(i)
-		var value = userValue.Field(i).Interface()
-		log.Printf("num field: %s: %v = %v, type: %v, kind: %v\r\n", field.Name, field.Type, value, reflect.TypeOf(value), reflect.TypeOf(value).Kind())
-
+func demo2() {
+	var p1 = &Person{
+		Name:    "Shepaprd",
+		Age:     20,
+		Ability: map[string]string{"Run": "Yes"},
+		Child:   nil,
 	}
 
-	for i := 0; i < userType.NumMethod(); i++ {
-		var method = userType.Method(i)
-		log.Printf("%s: %v\r\n", method.Name, method.Type)
-	}
+	var p1Type = reflect.TypeOf(p1)
+	fmt.Printf("Person = p1, kind: %v\r\n", p1Type.Kind())
+	fmt.Printf("Person = p1, name: %v\r\n", p1Type.Name())
+	fmt.Printf("Person = p1, elem: %v\r\n", p1Type.Elem())
 
-	// change valeu
-	var change float64 = 1.234
-	var pointer = reflect.ValueOf(&change)
-	var newChange = pointer.Elem()
-	log.Printf("type of newChange: %v\r\n", newChange.Type())
-	log.Printf("set newChange: %v\r\n", newChange.CanSet())
-	newChange.SetFloat(4.321)
-	log.Printf("new change: %v\r\n", change)
+	var p1Elem = p1Type.Elem()
+	fmt.Printf("Person = p1, NumFeild: %v\r\n", p1Elem.NumField())
+	fmt.Printf("Person = p1, NumMethod: %v\r\n", p1Type.NumMethod())
 
-	// call function
-	var doSomethingMethod = userValue.MethodByName("DoSomething")
-	var args = []reflect.Value{}
-	doSomethingMethod.Call(args)
+	var p *Person = nil
+	fmt.Printf("P == nil, %t\r\n", p == nil)
 
+	p = (*Person)(nil)
+	fmt.Printf("P == nil, %t\r\n", p == nil)
+}
+
+func demo3() {
+	var text = "This is shepard"
+	var textValue = reflect.ValueOf(text)
+	fmt.Printf("Text: %v\r\n", textValue)
+	fmt.Printf("Text String(): %v\r\n", textValue.String())
+
+	var num = 2
+	var numValue = reflect.ValueOf(num)
+	fmt.Printf("Num: %v\r\n", numValue)
+	fmt.Printf("Num String(): %v\r\n", numValue.String())
+	fmt.Printf("Num Interface(): %v\r\n", numValue.Interface())
+
+}
+
+// Person p
+type Person struct {
+	Name    string
+	Age     int
+	Ability map[string]string
+	Child   []string
+}
+
+// CanRun can run
+func (p *Person) CanRun() bool {
+	return true
+}
+
+// CanFly can fly
+func (p Person) CanFly() bool {
+	return false
 }

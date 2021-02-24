@@ -35,4 +35,23 @@ func main() {
 		fmt.Printf("key: %s, val: %s\r\n", kv.Key, kv.Value)
 	}
 
+	go func() {
+		for {
+			select {
+			case _, ok := <-client.Ctx().Done():
+				if !ok {
+					fmt.Println("failure")
+					time.Sleep(3 * time.Second)
+				}
+				fmt.Println("ok")
+			}
+		}
+	}()
+
+	var ch = client.Watch(context.Background(), "foo")
+	for c := range ch {
+		for _, ev := range c.Events {
+			fmt.Println(ev.Kv)
+		}
+	}
 }

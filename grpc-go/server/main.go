@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 
+	"golang.org/x/net/trace"
 	"google.golang.org/grpc"
 
 	"github.com/eviltomorrow/my-develop-kit/grpc-go/pb"
@@ -27,6 +29,8 @@ func main() {
 	}
 
 	grpc.EnableTracing = true
+	startTrace()
+
 	s := grpc.NewServer(grpc.NumStreamWorkers(3))
 	pb.RegisterGreeterServer(s, &HelloService{})
 
@@ -35,4 +39,13 @@ func main() {
 		log.Fatalf("failed to serve: %v", err)
 	}
 	s.Stop()
+}
+
+func startTrace() {
+	trace.AuthRequest = func(req *http.Request) (any, sensitive bool) {
+		return true, true
+	}
+
+	go http.ListenAndServe(":8090", nil)
+	log.Printf("Trace listen on 8090\r\n")
 }
