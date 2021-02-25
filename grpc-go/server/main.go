@@ -29,9 +29,11 @@ func main() {
 	}
 
 	grpc.EnableTracing = true
+
 	startTrace()
 
 	s := grpc.NewServer(grpc.NumStreamWorkers(3))
+
 	pb.RegisterGreeterServer(s, &HelloService{})
 
 	log.Println("Server start")
