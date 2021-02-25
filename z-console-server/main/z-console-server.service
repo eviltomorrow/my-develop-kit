@@ -1,0 +1,10 @@
+[Unit]
+Description=z-console-server
+After=network.target
+
+[Service]
+Restart=on-abnormal
+ExecStart=/root/app/z-console-server/z-console-server.runtime -certs "/root/app/z-console-server/certs" > /dev/null 2>&1
+
+[Install]
+WantedBy=multi-user.target

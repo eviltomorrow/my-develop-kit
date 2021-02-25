@@ -1,0 +1,6 @@
+1、按照实际路径配置 z-console-server.service 的对应值
+
+2、cp 至 /lib/systemd/system 目录
+3、systemctl daemon-reload
+4、systemctl start z-console-server.service
+5、systemctl enable z-console-server.service
