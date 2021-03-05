@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+
 	// Set up a connection to the server.
 	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
 	if err != nil {

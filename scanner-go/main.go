@@ -77,7 +77,7 @@ func demo5() {
 			return i + 1, data[0:i], nil
 		}
 		if atEOF {
-			return len(data), data[:len(data)], nil
+			return len(data), data[:], nil
 		}
 		return 0, nil, nil
 	}
