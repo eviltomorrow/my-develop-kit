@@ -77,8 +77,8 @@ public class HelloWorldServerTls {
 		int port = 8080;
 		String certFile = path + "certs/server.crt";
 		String keyFile = path + "certs/server.pem";
-		final HelloWorldServerTls server = new HelloWorldServerTls(host, port, certFile, keyFile,
-				args.length == 5 ? args[4] : null);
+		String caCertFile = path + "certs/ca.crt";
+		final HelloWorldServerTls server = new HelloWorldServerTls(host, port, certFile, keyFile, caCertFile);
 		server.start();
 		server.blockUntilShutdown();
 	}
