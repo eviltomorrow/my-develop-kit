@@ -37,7 +37,9 @@ func main() {
 			log.Fatalf("Parse private key failure, nest error: %v", err)
 		}
 		authMethods = append(authMethods, ssh.PublicKeys(signer))
-	} else {
+	}
+
+	if password != "" {
 		authMethods = append(authMethods, ssh.KeyboardInteractive(setKeyboard(password)))
 		authMethods = append(authMethods, ssh.Password(password))
 	}
@@ -110,7 +112,7 @@ func main() {
 		wg.Done()
 	}()
 
-	if err := session.Start("cd /tmp; ls -l; cat hsperfdata_root"); err != nil {
+	if err := session.Start("whoami"); err != nil {
 		log.Fatalf("start failure, nest error: %v", err)
 	}
 
