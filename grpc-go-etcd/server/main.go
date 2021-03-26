@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/eviltomorrow/my-develop-kit/grpc-go/pb"
-	"github.com/eviltomorrow/my-develop-kit/zlog"
 )
 
 // HelloService hello
@@ -77,7 +76,7 @@ func blockingUntilTermination() {
 	case syscall.SIGUSR2:
 	default:
 	}
-	zlog.Info("Termination main programming, cleanup function is executed complete")
+	log.Println("Termination main programming, cleanup function is executed complete")
 }
 
 func register(service string, host string, port int, ttl int64) (func(), error) {
