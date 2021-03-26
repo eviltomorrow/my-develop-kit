@@ -1,31 +1,78 @@
 package grpclb
 
 import (
-	"fmt"
+	"context"
+	"sync"
 
+	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/mvcc/mvccpb"
 	"google.golang.org/grpc/resolver"
 )
 
-// Prefix prefix
-var Prefix = "etcd"
-
-// Resolver resolver
 type Resolver struct {
-	endpoints []string
-	service   string
+	sync.RWMutex
+	Client    *clientv3.Client
+	cc        resolver.ClientConn
+	prefix    string
+	addresses map[string]resolver.Address
 }
 
-// NewResolver new resolver
-func NewResolver(service string, endpoints []string) resolver.Builder {
-	return &Resolver{endpoints: endpoints, service: service}
+func (r *Resolver) ResolveNow(resolver.ResolveNowOptions) {
+	// TODO:
 }
 
-// Build build build
-func (r *Resolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-	return nil, nil
+func (r *Resolver) Close() {
+	// TODO:
 }
 
-// Scheme returns the scheme supported by this resolver.
-func (r *Resolver) Scheme() string {
-	return fmt.Sprintf("%s://%s", Prefix, r.service)
+func (r *Resolver) watcher() {
+	r.addresses = make(map[string]resolver.Address)
+
+	getResp, err := r.Client.Get(context.Background(), r.prefix, clientv3.WithPrefix())
+	if err == nil && getResp != nil {
+		for _, kv := range getResp.Kvs {
+			r.setAddress(string(kv.Key), string(kv.Value))
+		}
+
+		r.cc.UpdateState(resolver.State{
+			Addresses: r.getAddresses(),
+		})
+	}
+
+	watch := r.Client.Watch(context.Background(), r.prefix, clientv3.WithPrefix())
+
+	for response := range watch {
+		for _, event := range response.Events {
+			switch event.Type {
+			case mvccpb.PUT:
+				r.setAddress(string(event.Kv.Key), string(event.Kv.Value))
+			case mvccpb.DELETE:
+				r.delAddress(string(event.Kv.Key))
+			}
+		}
+
+		r.cc.UpdateState(resolver.State{
+			Addresses: r.getAddresses(),
+		})
+	}
+}
+
+func (r *Resolver) setAddress(key, address string) {
+	r.Lock()
+	defer r.Unlock()
+	r.addresses[key] = resolver.Address{Addr: string(address)}
+}
+
+func (r *Resolver) delAddress(key string) {
+	r.Lock()
+	defer r.Unlock()
+	delete(r.addresses, key)
+}
+
+func (r *Resolver) getAddresses() []resolver.Address {
+	addresses := make([]resolver.Address, 0, len(r.addresses))
+	for _, address := range r.addresses {
+		addresses = append(addresses, address)
+	}
+	return addresses
 }

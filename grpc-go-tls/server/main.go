@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"time"
 
 	"github.com/eviltomorrow/my-develop-kit/grpc-go-tls/pb"
 	"google.golang.org/grpc"
@@ -20,6 +21,7 @@ type HelloService struct {
 
 // SayHello hello
 func (hs *HelloService) SayHello(ctx context.Context, request *pb.HelloRequest) (*pb.HelloReply, error) {
+	time.Sleep(50 * time.Second)
 	return &pb.HelloReply{Message: "Hello " + request.Name}, nil
 }
 
@@ -30,9 +32,9 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var caFile = "/home/shepard/workspace/space-go/project/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.crt"
-	var certFile = "/home/shepard/workspace/space-go/project/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.crt"
-	var keyFile = "/home/shepard/workspace/space-go/project/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/server.pem"
+	var caFile = "/home/shepard/workspace/space-go/project/src/test-env/configs/certs/ca.crt"
+	var certFile = "/home/shepard/workspace/space-go/project/src/test-env/configs/certs/server.crt"
+	var keyFile = "/home/shepard/workspace/space-go/project/src/test-env/configs/certs/server.pem"
 	// Create tls based credential.
 	// creds, err := credentials.NewServerTLSFromFile(testdata.Path(certFile), testdata.Path(keyFile))
 	// if err != nil {

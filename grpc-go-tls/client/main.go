@@ -16,9 +16,9 @@ import (
 
 func main() {
 
-	var caCertFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/ca.crt"
-	var clientCertFile = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/client.crt"
-	var clientCertKey = "/home/shepard/workspace-agent/project-go/src/github.com/eviltomorrow/my-develop-kit/grpc-go-tls/certs/client.pem"
+	var caCertFile = "/home/shepard/workspace/space-go/project/src/test-env/configs/certs/ca.crt"
+	var clientCertFile = "/home/shepard/workspace/space-go/project/src/test-env/configs/certs/client.crt"
+	var clientCertKey = "/home/shepard/workspace/space-go/project/src/test-env/configs/certs/client.pem"
 	var serverName = "localhost"
 
 	// Load the certificates from disk
@@ -62,4 +62,5 @@ func main() {
 		log.Fatalf("SayHello error: %v", err)
 	}
 	fmt.Println(repley.Message)
+	time.Sleep(1 * time.Second)
 }
