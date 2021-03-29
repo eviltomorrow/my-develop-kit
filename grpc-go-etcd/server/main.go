@@ -115,9 +115,14 @@ func register(service string, host string, port int, ttl int64) (func(), error) 
 	go func() {
 		for {
 			select {
-			case _, ok := <-keepAlive:
+			case k, ok := <-keepAlive:
 				if !ok {
 					return
+				}
+				if k == nil {
+					log.Printf("Keep alive failure")
+				} else {
+					log.Printf("Keep alive...")
 				}
 			}
 		}
