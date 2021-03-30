@@ -67,7 +67,7 @@ func main() {
 }
 
 func blockingUntilTermination() {
-	var ch = make(chan os.Signal)
+	var ch = make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGUSR1, syscall.SIGUSR2)
 	switch <-ch {
 	case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
@@ -114,6 +114,9 @@ func register(service string, host string, port int, ttl int64) (func(), error) 
 	go func() {
 		for {
 			select {
+			case <-client.Ctx().Done():
+				log.Printf("Etcd server shutdown")
+				return
 			case k, ok := <-keepAlive:
 				if !ok {
 					return
@@ -145,5 +148,5 @@ func localIP() (string, error) {
 			}
 		}
 	}
-	return "", errors.New("Unable to determine local ip")
+	return "", errors.New("unable to determine local ip")
 }
