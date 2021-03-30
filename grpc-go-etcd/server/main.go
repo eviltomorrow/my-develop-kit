@@ -12,11 +12,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eviltomorrow/my-develop-kit/grpc-go-etcd/pb"
 	"go.etcd.io/etcd/clientv3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/eviltomorrow/my-develop-kit/grpc-go/pb"
 )
 
 // HelloService hello
