@@ -173,7 +173,3 @@ func localIP() (string, error) {
 	}
 	return "", errors.New("unable to determine local ip")
 }
-
-func sleep(d time.Duration) {
-	time.Sleep(d)
-}
