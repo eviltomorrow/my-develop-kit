@@ -97,21 +97,21 @@ func register(service string, host string, port int, ttl int64) (func(), error) 
 	if err != nil {
 		return nil, err
 	}
+	var leaseID = &leaseResp.ID
 
-	key := fmt.Sprintf("/%s/%s:%d", service, host, port)
-	value := fmt.Sprintf("%s:%d", host, port)
-	log.Printf("Register information: key: %s, value: %s", key, value)
+	key, value := fmt.Sprintf("/%s/%s:%d", service, host, port), fmt.Sprintf("%s:%d", host, port)
 	_, err = client.Put(context.Background(), key, value, clientv3.WithLease(leaseResp.ID))
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Register information: key: %s, value: %s", key, value)
 
 	keepAlive, err := client.KeepAlive(context.Background(), leaseResp.ID)
 	if err != nil {
 		return nil, err
 	}
-
 	go func() {
+	keep:
 		for {
 			select {
 			case <-client.Ctx().Done():
@@ -119,18 +119,41 @@ func register(service string, host string, port int, ttl int64) (func(), error) 
 				return
 			case k, ok := <-keepAlive:
 				if !ok {
-					return
+					break keep
 				}
-				if k == nil {
-					log.Printf("Keep alive failure")
-				} else {
+				if k != nil {
 					log.Printf("Keep alive...")
 				}
 			}
 		}
+
+	release:
+		log.Printf("Start to release")
+		leaseResp, err := client.Grant(context.Background(), ttl)
+		if err != nil {
+			log.Printf("Grant failure, nest error: %v\r\n", err)
+			goto release
+		}
+
+		key, value := fmt.Sprintf("/%s/%s:%d", service, host, port), fmt.Sprintf("%s:%d", host, port)
+		_, err = client.Put(context.Background(), key, value, clientv3.WithLease(leaseResp.ID))
+		if err != nil {
+			log.Printf("Put failure, nest error: %v\r\n", err)
+			goto release
+		}
+		log.Printf("Register information: key: %s, value: %s", key, value)
+
+		keepAlive, err = client.KeepAlive(context.Background(), leaseResp.ID)
+		if err != nil {
+			log.Printf("KeepAlive failure, nest error: %v\r\n", err)
+			goto release
+		}
+		leaseID = &leaseResp.ID
+
+		goto keep
 	}()
 	close := func() {
-		_, _ = client.Revoke(ctx, leaseResp.ID)
+		_, _ = client.Revoke(ctx, *leaseID)
 	}
 
 	return close, nil
@@ -149,4 +172,8 @@ func localIP() (string, error) {
 		}
 	}
 	return "", errors.New("unable to determine local ip")
+}
+
+func sleep(d time.Duration) {
+	time.Sleep(d)
 }
