@@ -14,3 +14,7 @@ grpc-java-tls/.project
 grpc-java-tls/.settings
 
 goget/goget
+
+git-find-max-file.sh
+
+grpc-go-etcd/etcd
