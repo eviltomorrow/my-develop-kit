@@ -236,7 +236,7 @@ func WritePKCS8PrivateKey(path string, privKey []byte) error {
 }
 
 func main() {
-	var baseDir = "/home/shepard/workspace/space-go/project/src/agent/internal/collect/plugins/http/example-server/certs"
+	var baseDir = "certs"
 	// 生成 根 证书和密钥
 	caPrivBytes, caCertBytes, err := GenerateCertificate(nil, nil, 2048, &ApplicationInformation{
 		CertificateConfig: &CertificateConfig{
