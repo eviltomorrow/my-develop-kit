@@ -47,6 +47,7 @@ func ExecuteCmd(c string, timeout time.Duration) (string, string, error) {
 
 	select {
 	case <-ctx.Done():
+		cmd.Process.Signal(syscall.SIGINT)
 		syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 		<-ch
 		close(ch)
