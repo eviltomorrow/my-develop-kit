@@ -12,7 +12,7 @@ func formatDuration(d time.Duration) string {
 	)
 
 	switch {
-	case d.Hours() > 24.0:
+	case d.Hours() > 23.0:
 		var h = int(d.Hours())
 		day = h / 24
 		hour = h % 24
@@ -22,7 +22,7 @@ func formatDuration(d time.Duration) string {
 		var m = int(d.Minutes())
 		hour = m / 60
 		minute = m % 60
-		second = int(d.Seconds()) - ((day*24+hour)*60+minute)*60
+		second = int(d.Seconds()) - (hour*60+minute)*60
 	case d.Seconds() > 59:
 		var s = int(d.Seconds())
 		minute = s / 60
